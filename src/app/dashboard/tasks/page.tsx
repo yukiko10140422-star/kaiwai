@@ -11,6 +11,7 @@ import {
   fetchTasks,
   fetchMembers,
   fetchChannels,
+  fetchProjects,
   updateTaskStatus,
   createTask,
   deleteTask,
@@ -24,6 +25,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<TaskCardData[]>([]);
   const [members, setMembers] = useState<{ id: string; display_name: string }[]>([]);
   const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,15 +37,17 @@ export default function TasksPage() {
 
     async function load() {
       try {
-        const [tasksData, membersData, channelsData] = await Promise.all([
+        const [tasksData, membersData, channelsData, projectsData] = await Promise.all([
           fetchTasks(),
           fetchMembers(),
           fetchChannels(),
+          fetchProjects(),
         ]);
         if (!cancelled) {
           setTasks(tasksData);
           setMembers(membersData);
           setChannels(channelsData);
+          setProjects(projectsData);
           setLoading(false);
         }
       } catch (err) {
@@ -101,6 +105,7 @@ export default function TasksPage() {
       priority: formData.priority,
       assignee_ids: formData.assignee_ids,
       channel_id: formData.channel_id,
+      project_id: formData.project_id,
       due_date: formData.due_date,
     });
     const data = await fetchTasks();
@@ -203,6 +208,7 @@ export default function TasksPage() {
         onSubmit={handleCreateTask}
         members={members}
         channels={channels}
+        projects={projects}
       />
     </div>
   );

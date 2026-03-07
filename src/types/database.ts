@@ -167,6 +167,24 @@ export interface ActivityLog {
   created_at: string;
 }
 
+export type KpiTimeframe = "short" | "medium" | "long";
+
+export interface KpiGoal {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  timeframe: KpiTimeframe;
+  target_value: number;
+  current_value: number;
+  unit: string;
+  due_date: string | null;
+  is_completed: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Invitation {
   id: string;
   email: string;
@@ -279,6 +297,11 @@ export interface Database {
         Row: Notification;
         Insert: Omit<Notification, 'id' | 'created_at'>;
         Update: Partial<Omit<Notification, 'id'>>;
+      };
+      kpi_goals: {
+        Row: KpiGoal;
+        Insert: Omit<KpiGoal, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<KpiGoal, 'id' | 'created_at'>>;
       };
       invitations: {
         Row: Invitation;

@@ -10,6 +10,7 @@ interface TaskCreateModalProps {
   onSubmit: (data: TaskCreateFormData) => Promise<void>;
   members: { id: string; display_name: string }[];
   channels: { id: string; name: string }[];
+  projects: { id: string; name: string }[];
 }
 
 export interface TaskCreateFormData {
@@ -19,6 +20,7 @@ export interface TaskCreateFormData {
   priority: TaskPriority;
   assignee_ids: string[];
   channel_id: string | null;
+  project_id: string | null;
   due_date: string | null;
 }
 
@@ -35,13 +37,14 @@ const priorityOptions: { value: TaskPriority; label: string }[] = [
   { value: "low", label: "低" },
 ];
 
-export default function TaskCreateModal({ open, onClose, onSubmit, members, channels }: TaskCreateModalProps) {
+export default function TaskCreateModal({ open, onClose, onSubmit, members, channels, projects }: TaskCreateModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<TaskStatus>("todo");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [channelId, setChannelId] = useState("");
+  const [projectId, setProjectId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -52,6 +55,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
     setPriority("medium");
     setAssigneeIds([]);
     setChannelId("");
+    setProjectId("");
     setDueDate("");
   };
 
@@ -74,6 +78,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
         priority,
         assignee_ids: assigneeIds,
         channel_id: channelId || null,
+        project_id: projectId || null,
         due_date: dueDate || null,
       });
       resetForm();
@@ -190,8 +195,25 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
           </div>
         </div>
 
-        {/* Channel & Due date */}
+        {/* Project & Channel */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="task-project" className="block text-xs text-muted mb-1">
+              プロジェクト
+            </label>
+            <select
+              id="task-project"
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <option value="">なし</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label htmlFor="task-channel" className="block text-xs text-muted mb-1">
               チャンネル
@@ -208,19 +230,20 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
               ))}
             </select>
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="task-due" className="block text-xs text-muted mb-1">
-              期限
-            </label>
-            <input
-              id="task-due"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
+        {/* Due date */}
+        <div>
+          <label htmlFor="task-due" className="block text-xs text-muted mb-1">
+            期限
+          </label>
+          <input
+            id="task-due"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          />
         </div>
 
         {/* Submit */}

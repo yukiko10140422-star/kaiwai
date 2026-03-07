@@ -22,6 +22,7 @@ interface SidebarProps {
 const navItems = [
   { href: "/dashboard", label: "チャット", icon: ChatIcon },
   { href: "/dashboard/tasks", label: "タスクボード", icon: TaskIcon },
+  { href: "/dashboard/projects", label: "プロジェクト", icon: ProjectIcon },
   { href: "/dashboard/progress", label: "進捗", icon: ProgressIcon },
   { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
 ];
@@ -352,6 +353,14 @@ function SignOutIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  );
+}
+
+function ProjectIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
     </svg>
   );
 }

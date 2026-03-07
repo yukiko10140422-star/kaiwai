@@ -293,6 +293,26 @@ CREATE TABLE activity_logs (
 );
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 
+-- ----------------------------------------------------------
+-- 3.20 KPI Goals (KPI目標)
+-- ----------------------------------------------------------
+CREATE TABLE kpi_goals (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  timeframe TEXT NOT NULL CHECK (timeframe IN ('short', 'medium', 'long')),
+  target_value NUMERIC NOT NULL DEFAULT 100,
+  current_value NUMERIC NOT NULL DEFAULT 0,
+  unit TEXT NOT NULL DEFAULT '%',
+  due_date DATE,
+  is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+  created_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE kpi_goals ENABLE ROW LEVEL SECURITY;
+
 -- ============================================================
 -- 4. INDEXES
 -- ============================================================
@@ -314,6 +334,8 @@ CREATE INDEX idx_task_comments_task_id ON task_comments(task_id);
 CREATE INDEX idx_notifications_user_id ON notifications(user_id, is_read, created_at DESC);
 CREATE INDEX idx_activity_logs_created_at ON activity_logs(created_at DESC);
 CREATE INDEX idx_activity_logs_target ON activity_logs(target_type, target_id);
+CREATE INDEX idx_kpi_goals_project_id ON kpi_goals(project_id);
+CREATE INDEX idx_kpi_goals_timeframe ON kpi_goals(project_id, timeframe);
 CREATE INDEX idx_invitations_email ON invitations(email);
 CREATE INDEX idx_invitations_token ON invitations(token);
 
@@ -529,6 +551,16 @@ CREATE POLICY "activity_logs_select" ON activity_logs FOR SELECT
 CREATE POLICY "activity_logs_insert" ON activity_logs FOR INSERT
   TO authenticated WITH CHECK (user_id = auth.uid());
 
+-- ----- kpi_goals -----
+CREATE POLICY "kpi_goals_select" ON kpi_goals FOR SELECT
+  TO authenticated USING (true);
+CREATE POLICY "kpi_goals_insert" ON kpi_goals FOR INSERT
+  TO authenticated WITH CHECK (created_by = auth.uid());
+CREATE POLICY "kpi_goals_update" ON kpi_goals FOR UPDATE
+  TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "kpi_goals_delete" ON kpi_goals FOR DELETE
+  TO authenticated USING (true);
+
 -- ============================================================
 -- 6. FUNCTIONS & TRIGGERS
 -- ============================================================
@@ -554,6 +586,8 @@ CREATE TRIGGER tasks_updated_at
   BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER task_comments_updated_at
   BEFORE UPDATE ON task_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER kpi_goals_updated_at
+  BEFORE UPDATE ON kpi_goals FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- 新規ユーザー登録時に profiles レコードを自動作成
 CREATE OR REPLACE FUNCTION handle_new_user()
