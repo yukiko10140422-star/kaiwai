@@ -21,9 +21,19 @@ interface SidebarProps {
 
 const navItems = [
   { href: "/dashboard", label: "ホーム", icon: HomeIcon },
-  { href: "/dashboard/tasks", label: "タスクボード", icon: TaskIcon },
+  { href: "/dashboard/chat", label: "チャット", icon: ChatIcon },
+  { href: "/dashboard/tasks", label: "タスク", icon: TaskIcon },
   { href: "/dashboard/projects", label: "プロジェクト", icon: ProjectIcon },
   { href: "/dashboard/progress", label: "進捗", icon: ProgressIcon },
+  { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
+];
+
+// Mobile bottom nav: only show key tabs
+const mobileNavItems = [
+  { href: "/dashboard", label: "ホーム", icon: HomeIcon },
+  { href: "/dashboard/chat", label: "チャット", icon: ChatIcon },
+  { href: "/dashboard/tasks", label: "タスク", icon: TaskIcon },
+  { href: "/dashboard/projects", label: "PJ", icon: ProjectIcon },
   { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
 ];
 
@@ -260,33 +270,26 @@ export default function Sidebar({ user }: SidebarProps) {
       </AnimatePresence>
 
       {/* Mobile bottom bar */}
-      <MobileNav pathname={pathname} onMenuOpen={() => setMobileOpen(true)} />
+      <MobileNav pathname={pathname} />
     </>
   );
 }
 
 /* ---- Mobile Components ---- */
 
-function MobileNav({ pathname, onMenuOpen }: { pathname: string; onMenuOpen: () => void }) {
+function MobileNav({ pathname }: { pathname: string }) {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-border flex justify-around py-2 z-30 safe-bottom">
-      {/* Menu button */}
-      <button
-        onClick={onMenuOpen}
-        className="flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors text-muted"
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-        <span className="text-[10px]">メニュー</span>
-      </button>
-      {navItems.map(({ href, label, icon: Icon }) => {
-        const isActive = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar/95 backdrop-blur-md border-t border-border flex justify-around py-1.5 z-30 safe-bottom">
+      {mobileNavItems.map(({ href, label, icon: Icon }) => {
+        const isActive =
+          href === "/dashboard"
+            ? pathname === "/dashboard"
+            : pathname.startsWith(href);
         return (
           <Link
             key={href}
             href={href}
-            className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${
+            className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors ${
               isActive ? "text-accent" : "text-muted"
             }`}
           >
@@ -321,6 +324,14 @@ function CollapseIcon({
       ) : (
         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
       )}
+    </svg>
+  );
+}
+
+function ChatIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
     </svg>
   );
 }
