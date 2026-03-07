@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Modal, Button } from "@/components/ui";
 import type { TaskStatus, TaskPriority } from "@/types/database";
+import { showToast } from "@/lib/toast";
 
 interface TaskCreateModalProps {
   open: boolean;
@@ -85,6 +86,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
       onClose();
     } catch (err) {
       console.error("Failed to create task:", err);
+      showToast("タスクの作成に失敗しました", "error");
     } finally {
       setSubmitting(false);
     }

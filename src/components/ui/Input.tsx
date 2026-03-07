@@ -19,7 +19,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={id}
-          className={`w-full rounded-lg border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent ${
+          className={`w-full rounded-lg border bg-background px-4 py-2.5 text-sm min-h-[44px] focus:outline-none focus:ring-2 focus:ring-accent ${
             error ? "border-status-overdue" : "border-border"
           } ${className}`}
           {...props}

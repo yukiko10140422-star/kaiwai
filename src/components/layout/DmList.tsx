@@ -10,6 +10,7 @@ import {
   getDmConversations,
   getOrCreateDmConversation,
   getAllMembers,
+  updateDmReadStatus,
 } from "@/lib/dm";
 import type { DmConversationWithParticipant } from "@/lib/dm";
 import { getDmUnreadCounts, subscribeToUnread, unsubscribeFromUnread } from "@/lib/unread";
@@ -46,15 +47,18 @@ export default function DmList({ isCollapsed }: DmListProps) {
     return () => unsubscribeFromUnread(sub);
   }, [refreshUnread]);
 
-  // 現在開いているDMの未読はクリア
+  // 現在開いているDMの未読はクリア（ローカル＋DB）
   useEffect(() => {
     const match = pathname.match(/\/dashboard\/dm\/(.+)/);
     if (match) {
+      const conversationId = match[1];
       setUnreadCounts((prev) => {
         const next = { ...prev };
-        delete next[match[1]];
+        delete next[conversationId];
         return next;
       });
+      // Persist read status to the database
+      updateDmReadStatus(conversationId).catch(console.error);
     }
   }, [pathname]);
 

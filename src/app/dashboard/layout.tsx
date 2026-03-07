@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/layout/Sidebar";
 import DashboardHeader from "@/components/layout/DashboardHeader";
 import { ToastProvider } from "@/components/notifications";
+import ToastContainer from "@/components/ui/ToastContainer";
 
 export default async function DashboardLayout({
   children,
@@ -38,6 +39,7 @@ export default async function DashboardLayout({
           </main>
         </div>
       </div>
+      <ToastContainer />
     </ToastProvider>
   );
 }

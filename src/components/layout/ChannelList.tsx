@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import AnimatedList, { animatedListItemVariants } from "@/components/ui/AnimatedList";
 import type { Channel } from "@/types/database";
-import { getChannels, createChannel, deleteChannel } from "@/lib/chat";
+import { getChannels, createChannel, deleteChannel, updateReadStatus } from "@/lib/chat";
 import { getChannelUnreadCounts, subscribeToUnread, unsubscribeFromUnread } from "@/lib/unread";
 
 interface ChannelListProps {
@@ -39,15 +39,18 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
     return () => unsubscribeFromUnread(sub);
   }, [refreshUnread]);
 
-  // 現在開いているチャンネルの未読はクリア
+  // 現在開いているチャンネルの未読はクリア（ローカル＋DB）
   useEffect(() => {
     const match = pathname.match(/\/dashboard\/chat\/(.+)/);
     if (match) {
+      const channelId = match[1];
       setUnreadCounts((prev) => {
         const next = { ...prev };
-        delete next[match[1]];
+        delete next[channelId];
         return next;
       });
+      // Persist read status to the database
+      updateReadStatus(channelId).catch(console.error);
     }
   }, [pathname]);
 

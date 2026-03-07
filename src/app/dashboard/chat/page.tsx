@@ -20,6 +20,7 @@ import {
   subscribeToUnread,
   unsubscribeFromUnread,
 } from "@/lib/unread";
+import { showToast } from "@/lib/toast";
 
 export default function ChatListPage() {
   const router = useRouter();
@@ -32,6 +33,7 @@ export default function ChatListPage() {
   const [newChannelName, setNewChannelName] = useState("");
   const [showNewDm, setShowNewDm] = useState(false);
   const [members, setMembers] = useState<Profile[]>([]);
+  const [creatingChannel, setCreatingChannel] = useState(false);
 
   const refreshUnread = useCallback(() => {
     getChannelUnreadCounts().then(setChannelUnread).catch(console.error);
@@ -55,13 +57,18 @@ export default function ChatListPage() {
   const handleCreateChannel = async () => {
     const name = newChannelName.trim();
     if (!name) return;
+    setCreatingChannel(true);
     try {
       const ch = await createChannel(name, "", "public");
       setChannels((prev) => [...prev, ch]);
       setNewChannelName("");
       setShowCreate(false);
+      showToast("チャンネルを作成しました", "success");
     } catch (e) {
       console.error("Failed to create channel:", e);
+      showToast("チャンネルの作成に失敗しました", "error");
+    } finally {
+      setCreatingChannel(false);
     }
   };
 
@@ -73,6 +80,7 @@ export default function ChatListPage() {
         setMembers(m);
       } catch (e) {
         console.error(e);
+        showToast("メンバーの取得に失敗しました", "error");
       }
     }
   };
@@ -88,6 +96,7 @@ export default function ChatListPage() {
       router.push(`/dashboard/dm/${convId}`);
     } catch (e) {
       console.error(e);
+      showToast("DMの開始に失敗しました", "error");
     }
   };
 
@@ -161,8 +170,8 @@ export default function ChatListPage() {
                       className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus-glow"
                       onKeyDown={(e) => { if (e.key === "Escape") setShowCreate(false); }}
                     />
-                    <button type="submit" className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium">
-                      作成
+                    <button type="submit" disabled={creatingChannel} className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium disabled:opacity-50">
+                      {creatingChannel ? "作成中..." : "作成"}
                     </button>
                   </div>
                 </motion.form>

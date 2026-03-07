@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import ChannelHeader from "@/components/chat/ChannelHeader";
@@ -31,7 +31,8 @@ export default function ChannelPage() {
   const [error, setError] = useState<string | null>(null);
   const [threadMessageId, setThreadMessageId] = useState<string | null>(null);
   const [showFiles, setShowFiles] = useState(false);
-  const currentUserRef = useRef<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
 
   // Load channel data
   useEffect(() => {
@@ -49,7 +50,15 @@ export default function ChannelPage() {
           setError("ログインが必要です");
           return;
         }
-        currentUserRef.current = user.id;
+        setCurrentUserId(user.id);
+
+        // Fetch current user's profile for optimistic messages
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (profile) setCurrentUserProfile(profile);
 
         await joinChannel(channelId).catch((e) =>
           console.warn("joinChannel failed (may already be member):", e)
@@ -108,7 +117,20 @@ export default function ChannelPage() {
           // Only add top-level messages to the main list
           if (!fullMsg.parent_id) {
             setMessages((prev) => {
+              // Check if already exists (duplicate)
               if (prev.some((m) => m.id === fullMsg.id)) return prev;
+              // Replace optimistic message from the same user if content matches
+              const optimisticIdx = prev.findIndex(
+                (m) =>
+                  m.id.startsWith("temp-") &&
+                  m.user_id === fullMsg.user_id &&
+                  m.content === fullMsg.content
+              );
+              if (optimisticIdx !== -1) {
+                const next = [...prev];
+                next[optimisticIdx] = fullMsg;
+                return next;
+              }
               return [...prev, fullMsg];
             });
           }
@@ -128,13 +150,35 @@ export default function ChannelPage() {
 
   const handleSend = useCallback(
     async (content: string, files: File[]) => {
+      const tempId = `temp-${Date.now()}`;
+
+      // Add optimistic message immediately
+      if (currentUserId && currentUserProfile) {
+        const optimisticMsg: MessageWithAuthor = {
+          id: tempId,
+          channel_id: channelId,
+          conversation_id: null,
+          user_id: currentUserId,
+          parent_id: null,
+          content,
+          is_edited: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          author: currentUserProfile,
+          attachments: [],
+        };
+        setMessages((prev) => [...prev, optimisticMsg]);
+      }
+
       try {
         await sendMessage(channelId, content, files);
       } catch (e) {
+        // Remove the optimistic message on failure
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
         console.error("Failed to send message:", e);
       }
     },
-    [channelId]
+    [channelId, currentUserId, currentUserProfile]
   );
 
   const handleThreadClick = useCallback((messageId: string) => {
@@ -172,7 +216,7 @@ export default function ChannelPage() {
         />
         <MessageList
           messages={messages}
-          currentUserId={currentUserRef.current ?? ""}
+          currentUserId={currentUserId ?? ""}
           onThreadClick={handleThreadClick}
         />
         <MessageInput onSend={handleSend} placeholder="メッセージを入力..." />
@@ -185,7 +229,7 @@ export default function ChannelPage() {
             key={threadParent.id}
             parentMessage={threadParent}
             channelId={channelId}
-            currentUserId={currentUserRef.current ?? ""}
+            currentUserId={currentUserId ?? ""}
             onClose={() => setThreadMessageId(null)}
           />
         )}

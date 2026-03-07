@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
@@ -11,17 +11,62 @@ interface ModalProps {
   className?: string;
 }
 
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
 export default function Modal({ open, onClose, title, children, className = "" }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Lock body scroll
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  // Focus first element on open
+  useEffect(() => {
+    if (!open || !modalRef.current) return;
+    const first = modalRef.current.querySelector<HTMLElement>(FOCUSABLE);
+    first?.focus();
+  }, [open]);
+
+  // Keyboard: Escape + focus trap
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "Tab" && modalRef.current) {
+        const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    },
+    [onClose],
+  );
 
   useEffect(() => {
     if (!open) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, handleKeyDown]);
 
   return (
     <AnimatePresence>
@@ -37,6 +82,9 @@ export default function Modal({ open, onClose, title, children, className = "" }
           }}
         >
           <motion.div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
             className={`glass rounded-2xl p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto ${className}`}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
