@@ -279,7 +279,7 @@ export default function Sidebar({ user }: SidebarProps) {
 
 function MobileNav({ pathname }: { pathname: string }) {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar/95 backdrop-blur-md border-t border-border flex justify-around py-1.5 z-30 safe-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-border flex justify-around py-1.5 z-30 safe-bottom">
       {mobileNavItems.map(({ href, label, icon: Icon }) => {
         const isActive =
           href === "/dashboard"
