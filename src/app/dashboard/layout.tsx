@@ -1,0 +1,40 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import Sidebar from "@/components/layout/Sidebar";
+import DashboardHeader from "@/components/layout/DashboardHeader";
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  const userInfo = {
+    displayName:
+      user.user_metadata?.display_name ||
+      user.email?.split("@")[0] ||
+      "User",
+    email: user.email || "",
+    avatarUrl: user.user_metadata?.avatar_url || null,
+  };
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar user={userInfo} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <DashboardHeader userId={user.id} />
+        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

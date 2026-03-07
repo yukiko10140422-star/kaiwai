@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --sidebar: #ffffff;
+  --card: rgba(255, 255, 255, 0.8);
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --muted: #94a3b8;
+  --border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --sidebar: #1e293b;
+    --card: rgba(255, 255, 255, 0.05);
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --muted: #64748b;
+    --border: #334155;
+  }
+}
+
+[data-theme="dark"] {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --sidebar: #1e293b;
+  --card: rgba(255, 255, 255, 0.05);
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --muted: #64748b;
+  --border: #334155;
+}
+
+[data-theme="light"] {
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --sidebar: #ffffff;
+  --card: rgba(255, 255, 255, 0.8);
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --muted: #94a3b8;
+  --border: #e2e8f0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sidebar: var(--sidebar);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-status-todo: #94a3b8;
+  --color-status-progress: #3b82f6;
+  --color-status-review: #f59e0b;
+  --color-status-done: #22c55e;
+  --color-status-overdue: #ef4444;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.glass {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
