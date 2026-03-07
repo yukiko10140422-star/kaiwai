@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,9 +26,19 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#3b82f6" />
+        <link rel="apple-touch-icon" href="/icons/icon.svg" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("kaiwai-theme");if(t&&t!=="system"){document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.add(t)}}catch(e){}})()`,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW registration failed:',e)})})}`,
           }}
         />
       </head>
@@ -35,6 +46,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <InstallPrompt />
       </body>
     </html>
   );

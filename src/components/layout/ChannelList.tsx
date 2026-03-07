@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedList, { animatedListItemVariants } from "@/components/ui/AnimatedList";
 import type { Channel } from "@/types/database";
 import { getChannels, createChannel, deleteChannel } from "@/lib/chat";
 import { getChannelUnreadCounts, subscribeToUnread, unsubscribeFromUnread } from "@/lib/unread";
@@ -138,38 +139,39 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
       </AnimatePresence>
 
       {/* Channel list */}
-      <div className="space-y-0.5">
+      <AnimatedList className="space-y-0.5">
         {channels.map((ch) => {
           const href = `/dashboard/chat/${ch.id}`;
           const isActive = pathname === href;
 
           return (
-            <Link
-              key={ch.id}
-              href={href}
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                isActive
-                  ? "bg-accent/10 text-accent"
-                  : "text-muted hover:bg-card hover:text-foreground"
-              }`}
-            >
-              <span className="text-xs opacity-60">#</span>
-              <span className="truncate flex-1">{ch.name}</span>
-              <button
-                onClick={(e) => handleDelete(e, ch.id)}
-                className="shrink-0 opacity-0 group-hover:opacity-100 text-muted hover:text-status-overdue transition-all"
-                aria-label="チャンネル削除"
+            <motion.div key={ch.id} variants={animatedListItemVariants}>
+              <Link
+                href={href}
+                className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  isActive
+                    ? "bg-accent/10 text-accent"
+                    : "text-muted hover:bg-card hover:text-foreground"
+                }`}
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              {unreadCounts[ch.id] > 0 && (
-                <span className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center px-1">
-                  {unreadCounts[ch.id] > 99 ? "99+" : unreadCounts[ch.id]}
-                </span>
-              )}
-            </Link>
+                <span className="text-xs opacity-60">#</span>
+                <span className="truncate flex-1">{ch.name}</span>
+                <button
+                  onClick={(e) => handleDelete(e, ch.id)}
+                  className="shrink-0 opacity-0 group-hover:opacity-100 text-muted hover:text-status-overdue transition-all"
+                  aria-label="チャンネル削除"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                {unreadCounts[ch.id] > 0 && (
+                  <span className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center px-1">
+                    {unreadCounts[ch.id] > 99 ? "99+" : unreadCounts[ch.id]}
+                  </span>
+                )}
+              </Link>
+            </motion.div>
           );
         })}
 
@@ -178,7 +180,7 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
             チャンネルがありません
           </p>
         )}
-      </div>
+      </AnimatedList>
     </div>
   );
 }

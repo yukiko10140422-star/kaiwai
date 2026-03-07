@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/layout/Sidebar";
 import DashboardHeader from "@/components/layout/DashboardHeader";
+import { ToastProvider } from "@/components/notifications";
 
 export default async function DashboardLayout({
   children,
@@ -27,14 +28,16 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar user={userInfo} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader userId={user.id} />
-        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
-          {children}
-        </main>
+    <ToastProvider userId={user.id}>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar user={userInfo} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <DashboardHeader userId={user.id} />
+          <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }

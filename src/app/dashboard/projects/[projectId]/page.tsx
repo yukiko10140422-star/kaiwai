@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import { Button, Modal, Badge } from "@/components/ui";
+import PageTransition from "@/components/ui/PageTransition";
 import {
   fetchProject,
   updateProject,
@@ -224,7 +225,7 @@ export default function ProjectDetailPage({
   const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+    <PageTransition className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
@@ -503,6 +504,6 @@ export default function ProjectDetailPage({
           </div>
         </form>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }

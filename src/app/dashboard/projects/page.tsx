@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button, Input, Modal } from "@/components/ui";
+import PageTransition from "@/components/ui/PageTransition";
 import {
   fetchProjectsWithStats,
   createProject,
@@ -97,7 +98,7 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full p-3 sm:p-6 gap-4">
+    <PageTransition className="flex flex-col h-full p-3 sm:p-6 gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-bold gradient-text">
@@ -313,6 +314,6 @@ export default function ProjectsPage() {
           </Button>
         </div>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }

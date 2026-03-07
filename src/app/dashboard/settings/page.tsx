@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
+import PageTransition from "@/components/ui/PageTransition";
 import ThemeToggle from "@/components/settings/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 
@@ -35,7 +36,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-3 sm:p-6 max-w-2xl mx-auto space-y-4 sm:space-y-6">
+    <PageTransition className="p-3 sm:p-6 max-w-2xl mx-auto space-y-4 sm:space-y-6">
       <h1 className="text-xl sm:text-2xl font-bold">設定</h1>
 
       {/* プロフィール */}
@@ -93,6 +94,6 @@ export default function SettingsPage() {
           </Button>
         </form>
       </section>
-    </div>
+    </PageTransition>
   );
 }

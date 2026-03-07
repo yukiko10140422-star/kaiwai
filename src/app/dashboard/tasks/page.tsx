@@ -5,6 +5,7 @@ import KanbanBoard from "@/components/tasks/KanbanBoard";
 import TaskFilters, { defaultFilters, type FilterState } from "@/components/tasks/TaskFilters";
 import TaskCreateModal, { type TaskCreateFormData } from "@/components/tasks/TaskCreateModal";
 import { Button } from "@/components/ui";
+import PageTransition from "@/components/ui/PageTransition";
 import type { TaskCardData } from "@/components/tasks/TaskCard";
 import type { TaskStatus, TaskPriority } from "@/types/database";
 import {
@@ -181,7 +182,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="flex flex-col h-full p-3 sm:p-6 gap-4">
+    <PageTransition className="flex flex-col h-full p-3 sm:p-6 gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">タスクボード</h1>
@@ -210,6 +211,6 @@ export default function TasksPage() {
         channels={channels}
         projects={projects}
       />
-    </div>
+    </PageTransition>
   );
 }

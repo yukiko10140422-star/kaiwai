@@ -8,6 +8,7 @@ import {
   CalendarView,
   MemberProgress,
 } from "@/components/dashboard";
+import PageTransition from "@/components/ui/PageTransition";
 import {
   fetchDashboardStats,
   fetchMemberProgress,
@@ -73,7 +74,7 @@ export default function ProgressPage() {
   const upcomingTasks = calendarTasks.filter((t) => t.status !== "done");
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+    <PageTransition className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       <h1 className="text-xl sm:text-2xl font-bold">進捗ダッシュボード</h1>
 
       {/* 統計サマリーカード */}
@@ -190,7 +191,7 @@ export default function ProgressPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
 

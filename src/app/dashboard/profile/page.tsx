@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import PageTransition from "@/components/ui/PageTransition";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/types/database";
@@ -120,7 +121,7 @@ export default function ProfilePage() {
     .slice(0, 2);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <PageTransition className="flex min-h-screen items-center justify-center">
       <div className="glass rounded-2xl p-8 w-full max-w-md mx-4">
         <h1 className="text-2xl font-bold mb-6">プロフィール設定</h1>
 
@@ -208,6 +209,6 @@ export default function ProfilePage() {
           </div>
         </form>
       </div>
-    </div>
+    </PageTransition>
   );
 }

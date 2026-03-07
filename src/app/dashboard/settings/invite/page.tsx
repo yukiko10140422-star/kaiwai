@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button, Input } from "@/components/ui";
+import PageTransition from "@/components/ui/PageTransition";
 import {
   createInvitation,
   getInvitations,
@@ -65,7 +66,7 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <PageTransition className="p-6 max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold">メンバー招待</h1>
         <p className="text-sm text-muted mt-1">
@@ -156,6 +157,6 @@ export default function InvitePage() {
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }
