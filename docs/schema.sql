@@ -282,7 +282,7 @@ ALTER TABLE notifications REPLICA IDENTITY FULL; -- Realtime用
 -- ----------------------------------------------------------
 -- 3.19 Activity Log (アクティビティログ)
 -- ----------------------------------------------------------
-CREATE TABLE activity_log (
+CREATE TABLE activity_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   action TEXT NOT NULL, -- e.g. 'task_created', 'message_sent', 'status_changed'
@@ -291,7 +291,7 @@ CREATE TABLE activity_log (
   metadata JSONB DEFAULT '{}', -- 追加情報 (変更前後の値など)
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
 -- 4. INDEXES
@@ -312,8 +312,8 @@ CREATE INDEX idx_tasks_channel_id ON tasks(channel_id) WHERE channel_id IS NOT N
 CREATE INDEX idx_subtasks_task_id ON subtasks(task_id);
 CREATE INDEX idx_task_comments_task_id ON task_comments(task_id);
 CREATE INDEX idx_notifications_user_id ON notifications(user_id, is_read, created_at DESC);
-CREATE INDEX idx_activity_log_created_at ON activity_log(created_at DESC);
-CREATE INDEX idx_activity_log_target ON activity_log(target_type, target_id);
+CREATE INDEX idx_activity_logs_created_at ON activity_logs(created_at DESC);
+CREATE INDEX idx_activity_logs_target ON activity_logs(target_type, target_id);
 CREATE INDEX idx_invitations_email ON invitations(email);
 CREATE INDEX idx_invitations_token ON invitations(token);
 
@@ -523,10 +523,10 @@ CREATE POLICY "notifications_insert" ON notifications FOR INSERT
 CREATE POLICY "notifications_update_own" ON notifications FOR UPDATE
   TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
--- ----- activity_log -----
-CREATE POLICY "activity_log_select" ON activity_log FOR SELECT
+-- ----- activity_logs -----
+CREATE POLICY "activity_logs_select" ON activity_logs FOR SELECT
   TO authenticated USING (true);
-CREATE POLICY "activity_log_insert" ON activity_log FOR INSERT
+CREATE POLICY "activity_logs_insert" ON activity_logs FOR INSERT
   TO authenticated WITH CHECK (user_id = auth.uid());
 
 -- ============================================================

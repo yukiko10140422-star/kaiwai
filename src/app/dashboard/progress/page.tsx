@@ -167,20 +167,18 @@ export default function ProgressPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{
-                        backgroundColor:
-                          task.status === "in_progress"
-                            ? "var(--color-status-progress)"
-                            : task.status === "review"
-                            ? "var(--color-status-review)"
-                            : "var(--color-status-todo)",
-                      }}
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        task.status === "in_progress"
+                          ? "bg-status-progress"
+                          : task.status === "review"
+                          ? "bg-status-review"
+                          : "bg-status-todo"
+                      }`}
                     />
                     <span className="text-sm">{task.title}</span>
                   </div>
                   <span className="text-xs text-muted">
-                    {task.due_date.slice(5).replace("-", "/")}
+                    {task.due_date ? task.due_date.slice(5).replace("-", "/") : "未設定"}
                   </span>
                 </div>
               ))

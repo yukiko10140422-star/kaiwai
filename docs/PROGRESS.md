@@ -204,3 +204,36 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 - ビジュアル強化（globals.css、ランディングページ、各コンポーネントのスタイリッシュ化）
 - コミット＆プッシュ
 - ブラウザでの統合動作確認
+
+### 2026-03-08 セッション10
+**実施内容: プロジェクト全体コードレビュー＆改修**
+
+4つのサブエージェントで50件以上の問題を検出し、重要度順に修正:
+
+**セキュリティ修正:**
+- auth/callback: オープンリダイレクト脆弱性修正（next パラメータを検証）
+- middleware: 認証済みユーザーの `/` → `/dashboard` リダイレクト追加
+- invitations: deleteInvitation に invited_by チェック追加（権限なし削除を防止）
+- search: ilike クエリの `%` `_` エスケープ（SQL ワイルドカード注入防止）
+- signup: 成功後にパスワード state をクリア
+
+**バグ修正:**
+- login: try-catch-finally 追加（ネットワークエラーで loading が固まる問題）
+- DmList: window.location.href → router.push（Next.js ルーター破壊を修正）
+- ThreadPanel: handleSend に files パラメータ追加（型不整合修正）
+- progress: due_date null ガード追加（クラッシュ防止）
+- progress: CSS 変数 inline style → Tailwind クラスに変更
+- settings: 未使用の currentPassword state 削除
+- Sidebar: handleSignOut に try-catch 追加
+- notifications: formatRelativeTime の負値/NaN ガード追加
+
+**構造改善:**
+- error.tsx（グローバル）、dashboard/error.tsx 新規作成 → エラーバウンダリ
+- not-found.tsx 新規作成 → カスタム 404 ページ
+- database.ts: TaskAssignee 型追加、Database 型に task_assignees テーブル追加
+- schema.sql: activity_log → activity_logs に統一（TypeScript 型との整合）
+
+**次回やること:**
+- ブラウザでの統合動作確認
+- パフォーマンス最適化（N+1 クエリ、Realtime 最適化）
+- テスト追加検討

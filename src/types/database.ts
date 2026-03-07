@@ -116,6 +116,12 @@ export interface Label {
   created_at: string;
 }
 
+export interface TaskAssignee {
+  task_id: string;
+  user_id: string;
+  assigned_at: string;
+}
+
 export interface TaskLabelAssignment {
   task_id: string;
   label_id: string;
@@ -253,6 +259,11 @@ export interface Database {
         Row: Label;
         Insert: Omit<Label, 'id' | 'created_at'>;
         Update: Partial<Omit<Label, 'id'>>;
+      };
+      task_assignees: {
+        Row: TaskAssignee;
+        Insert: Omit<TaskAssignee, 'assigned_at'>;
+        Update: never;
       };
       task_labels: {
         Row: TaskLabelAssignment;

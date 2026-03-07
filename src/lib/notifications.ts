@@ -119,6 +119,8 @@ export function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString).getTime();
   const diff = now - date;
 
+  if (diff < 0 || isNaN(diff)) return "たった今";
+
   const seconds = Math.floor(diff / 1000);
   if (seconds < 60) return "たった今";
 

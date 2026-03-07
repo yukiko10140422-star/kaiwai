@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar } from "@/components/ui";
 import type { Profile } from "@/types/database";
@@ -25,6 +25,7 @@ export default function DmList({ isCollapsed }: DmListProps) {
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const pathname = usePathname();
+  const router = useRouter();
 
   const refreshUnread = useCallback(() => {
     getDmUnreadCounts()
@@ -86,7 +87,7 @@ export default function DmList({ isCollapsed }: DmListProps) {
       });
       setShowNewDm(false);
       // ナビゲーション
-      window.location.href = `/dashboard/dm/${conversationId}`;
+      router.push(`/dashboard/dm/${conversationId}`);
     } catch (e) {
       console.error("Failed to start DM:", e);
     }

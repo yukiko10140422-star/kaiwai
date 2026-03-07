@@ -7,7 +7,6 @@ import ThemeToggle from "@/components/settings/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SettingsPage() {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState("");
   const [changingPw, setChangingPw] = useState(false);
@@ -27,7 +26,6 @@ export default function SettingsPage() {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       setPasswordMsg("パスワードを変更しました");
-      setCurrentPassword("");
       setNewPassword("");
     } catch (err) {
       setPasswordMsg(err instanceof Error ? err.message : "変更に失敗しました");

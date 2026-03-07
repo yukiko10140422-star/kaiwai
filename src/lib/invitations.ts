@@ -91,11 +91,14 @@ export async function acceptInvitation(token: string): Promise<void> {
  */
 export async function deleteInvitation(id: string): Promise<void> {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
 
   const { error } = await supabase
     .from("invitations")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("invited_by", user.id);
 
   if (error) throw error;
 }

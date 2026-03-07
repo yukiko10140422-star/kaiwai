@@ -34,6 +34,7 @@ export default function SignupPage() {
       return;
     }
 
+    setPassword("");
     setSuccess(true);
     setLoading(false);
   };

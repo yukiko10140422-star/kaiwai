@@ -78,7 +78,7 @@ export default function ThreadPanel({
   }, [parentMessage.id]);
 
   const handleSend = useCallback(
-    async (content: string) => {
+    async (content: string, _files: File[]) => {
       try {
         await sendThreadReply(channelId, parentMessage.id, content);
       } catch (e) {
@@ -146,7 +146,7 @@ export default function ThreadPanel({
 
       {/* Reply input */}
       <MessageInput
-        onSend={(content) => handleSend(content)}
+        onSend={handleSend}
         placeholder="返信を入力..."
       />
     </motion.div>

@@ -36,7 +36,7 @@ export async function searchMessages(
       profiles!inner ( display_name, avatar_url )
     `
     )
-    .ilike("content", `%${query}%`)
+    .ilike("content", `%${query.replace(/[%_\\]/g, "\\$&")}%`)
     .order("created_at", { ascending: false })
     .limit(limit);
 
