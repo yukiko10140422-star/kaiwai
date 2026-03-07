@@ -190,11 +190,12 @@ ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 CREATE TABLE tasks (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  channel_id UUID REFERENCES channels(id) ON DELETE SET NULL, -- 関連チャンネル
   title TEXT NOT NULL,
   description TEXT DEFAULT '',
   status task_status NOT NULL DEFAULT 'todo',
   priority task_priority NOT NULL DEFAULT 'medium',
-  assignee_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  assignee_id UUID REFERENCES profiles(id) ON DELETE SET NULL, -- レガシー（単一アサイン）
   created_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   due_date DATE,
   position INTEGER NOT NULL DEFAULT 0, -- カンバン内の並び順
@@ -227,6 +228,17 @@ CREATE TABLE labels (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE labels ENABLE ROW LEVEL SECURITY;
+
+-- ----------------------------------------------------------
+-- 3.16a Task Assignees (タスク-担当者 多対多)
+-- ----------------------------------------------------------
+CREATE TABLE task_assignees (
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  assigned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (task_id, user_id)
+);
+ALTER TABLE task_assignees ENABLE ROW LEVEL SECURITY;
 
 -- ----------------------------------------------------------
 -- 3.16 Task Labels (タスク-ラベル 多対多)
@@ -294,6 +306,9 @@ CREATE INDEX idx_tasks_project_id ON tasks(project_id);
 CREATE INDEX idx_tasks_assignee_id ON tasks(assignee_id);
 CREATE INDEX idx_tasks_status ON tasks(status);
 CREATE INDEX idx_tasks_due_date ON tasks(due_date) WHERE due_date IS NOT NULL;
+CREATE INDEX idx_task_assignees_task_id ON task_assignees(task_id);
+CREATE INDEX idx_task_assignees_user_id ON task_assignees(user_id);
+CREATE INDEX idx_tasks_channel_id ON tasks(channel_id) WHERE channel_id IS NOT NULL;
 CREATE INDEX idx_subtasks_task_id ON subtasks(task_id);
 CREATE INDEX idx_task_comments_task_id ON task_comments(task_id);
 CREATE INDEX idx_notifications_user_id ON notifications(user_id, is_read, created_at DESC);
@@ -472,6 +487,14 @@ CREATE POLICY "labels_insert" ON labels FOR INSERT
 CREATE POLICY "labels_update" ON labels FOR UPDATE
   TO authenticated USING (true);
 CREATE POLICY "labels_delete" ON labels FOR DELETE
+  TO authenticated USING (true);
+
+-- ----- task_assignees -----
+CREATE POLICY "task_assignees_select" ON task_assignees FOR SELECT
+  TO authenticated USING (true);
+CREATE POLICY "task_assignees_insert" ON task_assignees FOR INSERT
+  TO authenticated WITH CHECK (true);
+CREATE POLICY "task_assignees_delete" ON task_assignees FOR DELETE
   TO authenticated USING (true);
 
 -- ----- task_labels -----

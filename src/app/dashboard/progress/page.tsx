@@ -73,11 +73,11 @@ export default function ProgressPage() {
   const upcomingTasks = calendarTasks.filter((t) => t.status !== "done");
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold">進捗ダッシュボード</h1>
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+      <h1 className="text-xl sm:text-2xl font-bold">進捗ダッシュボード</h1>
 
       {/* 統計サマリーカード */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard
           title="全タスク"
           value={s.total}
@@ -105,12 +105,12 @@ export default function ProgressPage() {
       </div>
 
       {/* メインコンテンツ: 円グラフ + プロジェクト別進捗 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         {/* 全体進捗率 */}
         <div className="glass rounded-2xl p-6 flex flex-col items-center justify-center">
           <h3 className="font-semibold mb-4 self-start">全体進捗率</h3>
-          <ProgressCircle value={completionRate} size={160} strokeWidth={10} label="完了" />
-          <div className="flex gap-4 mt-4 text-sm">
+          <ProgressCircle value={completionRate} size={140} strokeWidth={10} label="完了" />
+          <div className="flex flex-wrap gap-3 sm:gap-4 mt-4 text-xs sm:text-sm justify-center">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-status-done" />
               完了 {s.completed}
@@ -152,7 +152,7 @@ export default function ProgressPage() {
       </div>
 
       {/* カレンダー */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         <CalendarView tasks={calendarTasks} />
 
         {/* 今週のタスク */}

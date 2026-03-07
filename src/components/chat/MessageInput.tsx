@@ -200,7 +200,7 @@ export default function MessageInput({
 
   return (
     <div
-      className={`relative border-t border-border px-6 py-3 transition-colors ${
+      className={`relative border-t border-border px-3 sm:px-6 py-3 transition-colors ${
         isDragOver ? "bg-accent/10" : ""
       }`}
       onDragOver={handleDragOver}

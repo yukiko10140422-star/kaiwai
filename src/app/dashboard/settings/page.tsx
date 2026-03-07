@@ -37,8 +37,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">設定</h1>
+    <div className="p-3 sm:p-6 max-w-2xl mx-auto space-y-4 sm:space-y-6">
+      <h1 className="text-xl sm:text-2xl font-bold">設定</h1>
 
       {/* プロフィール */}
       <section className="glass rounded-2xl p-5">

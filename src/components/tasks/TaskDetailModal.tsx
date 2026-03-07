@@ -8,6 +8,7 @@ interface TaskDetailModalProps {
   task: TaskCardData | null;
   onClose: () => void;
   onStatusChange?: (taskId: string, status: TaskStatus) => void;
+  onDelete?: (taskId: string) => void;
 }
 
 const statusOptions: { value: TaskStatus; label: string; variant: "todo" | "progress" | "review" | "done" }[] = [
@@ -23,7 +24,7 @@ const priorityLabels: Record<TaskPriority, { label: string; color: string }> = {
   low: { label: "低", color: "text-gray-500" },
 };
 
-export default function TaskDetailModal({ task, onClose, onStatusChange }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, onClose, onStatusChange, onDelete }: TaskDetailModalProps) {
   if (!task) return null;
 
   const isOverdue =
@@ -132,10 +133,25 @@ export default function TaskDetailModal({ task, onClose, onStatusChange }: TaskD
         </div>
       )}
 
-      {/* Timestamps */}
-      <div className="pt-3 border-t border-border text-[11px] text-muted flex gap-4">
-        <span>作成: {new Date(task.created_at).toLocaleDateString("ja-JP")}</span>
-        <span>更新: {new Date(task.updated_at).toLocaleDateString("ja-JP")}</span>
+      {/* Timestamps & Delete */}
+      <div className="pt-3 border-t border-border flex items-center justify-between">
+        <div className="text-[11px] text-muted flex gap-4">
+          <span>作成: {new Date(task.created_at).toLocaleDateString("ja-JP")}</span>
+          <span>更新: {new Date(task.updated_at).toLocaleDateString("ja-JP")}</span>
+        </div>
+        {onDelete && (
+          <button
+            onClick={() => {
+              if (confirm("このタスクを削除しますか？")) {
+                onDelete(task.id);
+                onClose();
+              }
+            }}
+            className="text-xs text-status-overdue hover:text-red-400 transition-colors"
+          >
+            削除
+          </button>
+        )}
       </div>
     </Modal>
   );

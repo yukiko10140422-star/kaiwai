@@ -29,14 +29,14 @@ export default function TaskFilters({ filters, onChange, assigneeOptions }: Task
     onChange({ ...filters, ...partial });
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
       {/* Search */}
       <input
         type="text"
         placeholder="タスクを検索..."
         value={filters.search}
         onChange={(e) => update({ search: e.target.value })}
-        className="h-9 rounded-lg border border-border bg-transparent px-3 text-sm placeholder:text-muted focus:outline-none focus:border-accent transition-colors w-48"
+        className="h-9 rounded-lg border border-border bg-transparent px-3 text-sm placeholder:text-muted focus:outline-none focus:border-accent transition-colors w-full sm:w-48"
       />
 
       {/* Status filter */}

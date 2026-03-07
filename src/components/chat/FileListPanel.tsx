@@ -55,7 +55,7 @@ export default function FileListPanel({ channelId, conversationId, onClose }: Fi
       animate={{ width: 340, opacity: 1 }}
       exit={{ width: 0, opacity: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="shrink-0 border-l border-border h-full overflow-hidden flex flex-col bg-sidebar"
+      className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto w-full md:w-[360px] shrink-0 border-l border-border h-full overflow-hidden flex flex-col bg-sidebar"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">

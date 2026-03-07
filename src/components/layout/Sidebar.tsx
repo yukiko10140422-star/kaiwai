@@ -33,6 +33,7 @@ const sidebarVariants = {
 
 export default function Sidebar({ user }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -178,23 +179,104 @@ export default function Sidebar({ user }: SidebarProps) {
         </div>
       </motion.aside>
 
+      {/* Mobile slide-out sidebar */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.aside
+              className="md:hidden fixed left-0 top-0 bottom-0 w-72 bg-sidebar border-r border-border z-50 flex flex-col overflow-y-auto"
+              initial={{ x: -288 }}
+              animate={{ x: 0 }}
+              exit={{ x: -288 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <div className="flex items-center justify-between p-4 h-16 border-b border-border">
+                <span className="font-bold text-lg">KAIWAI</span>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-card transition-colors"
+                  aria-label="閉じる"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+                {navItems.map(({ href, label, icon: Icon }) => {
+                  const isActive = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                        isActive ? "bg-accent/10 text-accent" : "text-muted hover:bg-card hover:text-foreground"
+                      }`}
+                    >
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="text-sm font-medium">{label}</span>
+                    </Link>
+                  );
+                })}
+                <div className="border-t border-border mt-2 pt-2">
+                  <ChannelList isCollapsed={false} />
+                </div>
+                <div className="border-t border-border mt-2 pt-2">
+                  <DmList isCollapsed={false} />
+                </div>
+              </nav>
+              <div className="p-3 border-t border-border">
+                <div className="flex items-center gap-3 px-2 py-2">
+                  <Avatar name={user.displayName} src={user.avatarUrl} size="sm" />
+                  <div className="overflow-hidden">
+                    <p className="text-sm font-medium truncate">{user.displayName}</p>
+                    <p className="text-xs text-muted truncate">{user.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                  className="flex items-center gap-3 px-3 py-2 mt-1 w-full rounded-lg text-muted hover:bg-card hover:text-foreground transition-colors"
+                >
+                  <SignOutIcon className="w-5 h-5 shrink-0" />
+                  <span className="text-sm font-medium">サインアウト</span>
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Mobile bottom bar */}
-      <MobileNav pathname={pathname} />
+      <MobileNav pathname={pathname} onMenuOpen={() => setMobileOpen(true)} />
     </>
   );
 }
 
 /* ---- Mobile Components ---- */
 
-function MobileNav({ pathname }: { pathname: string }) {
+function MobileNav({ pathname, onMenuOpen }: { pathname: string; onMenuOpen: () => void }) {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-border flex justify-around py-2 z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-border flex justify-around py-2 z-30 safe-bottom">
+      {/* Menu button */}
+      <button
+        onClick={onMenuOpen}
+        className="flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors text-muted"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <span className="text-[10px]">メニュー</span>
+      </button>
       {navItems.map(({ href, label, icon: Icon }) => {
-        const isActive =
-          href === "/dashboard"
-            ? pathname === "/dashboard"
-            : pathname.startsWith(href);
-
+        const isActive = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
         return (
           <Link
             key={href}

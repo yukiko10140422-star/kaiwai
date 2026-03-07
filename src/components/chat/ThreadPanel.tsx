@@ -94,7 +94,7 @@ export default function ThreadPanel({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 360, opacity: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="w-[360px] h-full border-l border-border bg-sidebar flex flex-col shrink-0"
+      className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto w-full md:w-[360px] h-full border-l border-border bg-sidebar flex flex-col shrink-0"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">

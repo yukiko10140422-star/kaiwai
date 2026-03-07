@@ -8,7 +8,7 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ userId }: DashboardHeaderProps) {
   return (
-    <header className="hidden md:flex items-center justify-end h-12 px-4 border-b border-border bg-sidebar shrink-0">
+    <header className="flex items-center justify-end h-12 px-3 sm:px-4 border-b border-border bg-sidebar shrink-0">
       <NotificationBell userId={userId} />
     </header>
   );

@@ -26,6 +26,8 @@ const priorityIcon: Record<TaskPriority, { color: string; label: string }> = {
 
 export interface TaskCardData extends Task {
   assignee?: Pick<Profile, "display_name" | "avatar_url"> | null;
+  assignees?: Pick<Profile, "id" | "display_name" | "avatar_url">[];
+  channel?: Pick<import("@/types/database").Channel, "id" | "name"> | null;
   labels?: Label[];
   subtask_total?: number;
   subtask_done?: number;
@@ -109,14 +111,30 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
           )}
         </div>
 
-        {/* Assignee */}
-        {task.assignee && (
+        {/* Assignees */}
+        {task.assignees && task.assignees.length > 0 ? (
+          <div className="flex -space-x-1.5">
+            {task.assignees.slice(0, 3).map((a) => (
+              <Avatar
+                key={a.id}
+                name={a.display_name}
+                src={a.avatar_url}
+                size="xs"
+              />
+            ))}
+            {task.assignees.length > 3 && (
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-card text-[9px] text-muted border border-border">
+                +{task.assignees.length - 3}
+              </span>
+            )}
+          </div>
+        ) : task.assignee ? (
           <Avatar
             name={task.assignee.display_name}
             src={task.assignee.avatar_url}
             size="xs"
           />
-        )}
+        ) : null}
       </div>
     </motion.div>
   );

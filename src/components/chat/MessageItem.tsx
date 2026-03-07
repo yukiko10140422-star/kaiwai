@@ -160,7 +160,7 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
 
   return (
     <motion.div
-      className="group relative flex gap-3 px-6 py-0.5 hover:bg-card/50 transition-colors"
+      className="group relative flex gap-2 sm:gap-3 px-3 sm:px-6 py-0.5 hover:bg-card/50 transition-colors"
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}

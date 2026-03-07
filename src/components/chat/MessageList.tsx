@@ -62,7 +62,7 @@ export default function MessageList({ messages, currentUserId, onThreadClick }: 
         return (
           <div key={msg.id}>
             {showDateSeparator && (
-              <div className="flex items-center gap-4 px-6 py-3">
+              <div className="flex items-center gap-4 px-3 sm:px-6 py-3">
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-xs font-medium text-muted">
                   {formatDateSeparator(msg.created_at)}

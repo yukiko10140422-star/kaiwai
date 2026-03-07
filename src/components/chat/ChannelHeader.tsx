@@ -17,29 +17,29 @@ export default function ChannelHeader({
   onFilesClick,
 }: ChannelHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-border px-6 py-3">
+    <div className="flex items-center justify-between border-b border-border px-3 sm:px-6 py-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-muted text-sm">#</span>
-          <h2 className="text-lg font-bold truncate">{channel.name}</h2>
+          <h2 className="text-base sm:text-lg font-bold truncate">{channel.name}</h2>
         </div>
         {channel.description && (
-          <p className="text-xs text-muted truncate">{channel.description}</p>
+          <p className="text-xs text-muted truncate hidden sm:block">{channel.description}</p>
         )}
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-3 shrink-0">
         {/* Member avatars */}
         <button
           onClick={onMembersClick}
-          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted hover:bg-card transition-colors"
+          className="flex items-center gap-1 sm:gap-2 rounded-lg px-2 sm:px-3 py-1.5 text-sm text-muted hover:bg-card transition-colors"
         >
           <div className="flex -space-x-2">
-            {members.slice(0, 4).map((m) => (
+            {members.slice(0, 3).map((m) => (
               <Avatar key={m.id} src={m.avatar_url} name={m.display_name} size="sm" />
             ))}
           </div>
-          <span>{members.length}</span>
+          <span className="hidden sm:inline">{members.length}</span>
         </button>
 
         {/* Files button */}

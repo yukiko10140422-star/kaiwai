@@ -21,7 +21,9 @@ export interface CreateTaskInput {
   status?: TaskStatus;
   priority?: TaskPriority;
   assignee_id?: string | null;
+  assignee_ids?: string[];
   project_id?: string | null;
+  channel_id?: string | null;
   due_date?: string | null;
   position?: number;
 }
@@ -36,7 +38,7 @@ export interface UpdateTaskInput {
   position?: number;
 }
 
-/** Fetch tasks with joined assignee, labels, and subtask counts */
+/** Fetch tasks with joined assignees, labels, channel, and subtask counts */
 export async function fetchTasks(projectId?: string): Promise<TaskCardData[]> {
   const supabase = createClient();
 
@@ -45,6 +47,8 @@ export async function fetchTasks(projectId?: string): Promise<TaskCardData[]> {
     .select(`
       *,
       assignee:profiles!tasks_assignee_id_fkey(display_name, avatar_url),
+      task_assignees(user_id, profiles(id, display_name, avatar_url)),
+      channel:channels!tasks_channel_id_fkey(id, name),
       task_labels(label_id, labels(*)),
       subtasks(id, is_completed)
     `)
@@ -63,15 +67,20 @@ export async function fetchTasks(projectId?: string): Promise<TaskCardData[]> {
     const labels = (row.task_labels as { label_id: string; labels: Label }[])?.map(
       (tl) => tl.labels
     ) ?? [];
+    const assignees = (row.task_assignees as { user_id: string; profiles: Pick<Profile, "id" | "display_name" | "avatar_url"> }[])?.map(
+      (ta) => ta.profiles
+    ) ?? [];
 
     return {
       ...row,
       assignee: row.assignee ?? null,
+      assignees,
+      channel: row.channel ?? null,
       labels,
       subtask_total: subtasks.length,
       subtask_done: subtasks.filter((s) => s.is_completed).length,
-      // Remove joined fields not in TaskCardData
       task_labels: undefined,
+      task_assignees: undefined,
       subtasks: undefined,
     } as unknown as TaskCardData;
   });
@@ -83,10 +92,12 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
+  const { assignee_ids, ...taskInput } = input;
+
   const { data, error } = await supabase
     .from("tasks")
     .insert({
-      ...input,
+      ...taskInput,
       created_by: user.id,
       status: input.status ?? "todo",
       priority: input.priority ?? "medium",
@@ -96,7 +107,41 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
     .single();
 
   if (error) throw error;
+
+  // 複数アサイン
+  if (assignee_ids && assignee_ids.length > 0) {
+    await setTaskAssignees(data.id, assignee_ids);
+  }
+
   return data;
+}
+
+/** Set task assignees (replace all) */
+export async function setTaskAssignees(taskId: string, userIds: string[]): Promise<void> {
+  const supabase = createClient();
+
+  // 既存を削除
+  await supabase.from("task_assignees").delete().eq("task_id", taskId);
+
+  // 新規追加
+  if (userIds.length > 0) {
+    const { error } = await supabase
+      .from("task_assignees")
+      .insert(userIds.map((user_id) => ({ task_id: taskId, user_id })));
+    if (error) throw error;
+  }
+}
+
+/** Fetch channels for task association */
+export async function fetchChannels(): Promise<{ id: string; name: string }[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("channels")
+    .select("id, name")
+    .order("name");
+
+  if (error) throw error;
+  return data ?? [];
 }
 
 /** Update an existing task */

@@ -10,6 +10,7 @@ import type { TaskStatus } from "@/types/database";
 interface KanbanBoardProps {
   tasks: TaskCardData[];
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
+  onDelete?: (taskId: string) => void;
 }
 
 const columns: { status: TaskStatus; label: string; variant: "todo" | "progress" | "review" | "done" }[] = [
@@ -19,7 +20,7 @@ const columns: { status: TaskStatus; label: string; variant: "todo" | "progress"
   { status: "done", label: "完了", variant: "done" },
 ];
 
-export default function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps) {
+export default function KanbanBoard({ tasks, onStatusChange, onDelete }: KanbanBoardProps) {
   const [selectedTask, setSelectedTask] = useState<TaskCardData | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
@@ -47,7 +48,7 @@ export default function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps)
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-4 h-full">
+      <div className="flex flex-col md:flex-row gap-4 overflow-x-auto pb-4 h-full">
         {columns.map((col) => {
           const columnTasks = tasks.filter((t) => t.status === col.status);
           const isOver = dragOverColumn === col.status;
@@ -55,7 +56,7 @@ export default function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps)
           return (
             <div
               key={col.status}
-              className={`flex flex-col shrink-0 w-72 rounded-xl transition-colors ${
+              className={`flex flex-col shrink-0 w-full md:w-72 rounded-xl transition-colors ${
                 isOver ? "bg-accent/5 ring-2 ring-accent/20" : ""
               }`}
               onDrop={(e) => handleDrop(e, col.status)}
@@ -106,6 +107,7 @@ export default function KanbanBoard({ tasks, onStatusChange }: KanbanBoardProps)
             prev && prev.id === taskId ? { ...prev, status } : prev
           );
         }}
+        onDelete={onDelete}
       />
     </>
   );
