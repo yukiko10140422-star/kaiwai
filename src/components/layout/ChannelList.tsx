@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Channel } from "@/types/database";
-import { getChannels, createChannel } from "@/lib/chat";
+import { getChannels, createChannel, deleteChannel } from "@/lib/chat";
 import { getChannelUnreadCounts, subscribeToUnread, unsubscribeFromUnread } from "@/lib/unread";
 
 interface ChannelListProps {
@@ -61,6 +61,19 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
       setIsCreating(false);
     } catch (e) {
       console.error("Failed to create channel:", e);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, channelId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("このチャンネルを削除しますか？")) return;
+
+    try {
+      await deleteChannel(channelId);
+      setChannels((prev) => prev.filter((ch) => ch.id !== channelId));
+    } catch (e) {
+      console.error("Failed to delete channel:", e);
     }
   };
 
@@ -134,7 +147,7 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
             <Link
               key={ch.id}
               href={href}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                 isActive
                   ? "bg-accent/10 text-accent"
                   : "text-muted hover:bg-card hover:text-foreground"
@@ -142,6 +155,15 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
             >
               <span className="text-xs opacity-60">#</span>
               <span className="truncate flex-1">{ch.name}</span>
+              <button
+                onClick={(e) => handleDelete(e, ch.id)}
+                className="shrink-0 opacity-0 group-hover:opacity-100 text-muted hover:text-status-overdue transition-all"
+                aria-label="チャンネル削除"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               {unreadCounts[ch.id] > 0 && (
                 <span className="shrink-0 min-w-[18px] h-[18px] rounded-full bg-accent text-white text-[10px] font-bold flex items-center justify-center px-1">
                   {unreadCounts[ch.id] > 99 ? "99+" : unreadCounts[ch.id]}

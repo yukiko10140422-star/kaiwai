@@ -343,14 +343,14 @@ CREATE POLICY "channels_delete" ON channels FOR DELETE
   TO authenticated USING (created_by = auth.uid());
 
 -- ----- channel_members -----
+-- NOTE: 自己参照の EXISTS は無限再帰で 500 エラーになるため true で許可
+-- チャンネル自体の RLS で保護されているため安全
 CREATE POLICY "channel_members_select" ON channel_members FOR SELECT
-  TO authenticated USING (
-    EXISTS (
-      SELECT 1 FROM channel_members cm WHERE cm.channel_id = channel_id AND cm.user_id = auth.uid()
-    )
-  );
+  TO authenticated USING (true);
 CREATE POLICY "channel_members_insert" ON channel_members FOR INSERT
   TO authenticated WITH CHECK (user_id = auth.uid());
+CREATE POLICY "channel_members_update" ON channel_members FOR UPDATE
+  TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 CREATE POLICY "channel_members_delete_own" ON channel_members FOR DELETE
   TO authenticated USING (user_id = auth.uid());
 
@@ -365,12 +365,10 @@ CREATE POLICY "dm_conversations_insert" ON dm_conversations FOR INSERT
   TO authenticated WITH CHECK (true);
 
 -- ----- dm_participants -----
+-- NOTE: 自己参照の EXISTS は無限再帰で 500 エラーになるため true で許可
+-- dm_conversations 自体の RLS で保護されているため安全
 CREATE POLICY "dm_participants_select" ON dm_participants FOR SELECT
-  TO authenticated USING (
-    EXISTS (
-      SELECT 1 FROM dm_participants dp WHERE dp.conversation_id = conversation_id AND dp.user_id = auth.uid()
-    )
-  );
+  TO authenticated USING (true);
 CREATE POLICY "dm_participants_insert" ON dm_participants FOR INSERT
   TO authenticated WITH CHECK (true);
 

@@ -51,7 +51,9 @@ export default function ChannelPage() {
         }
         currentUserRef.current = user.id;
 
-        await joinChannel(channelId);
+        await joinChannel(channelId).catch((e) =>
+          console.warn("joinChannel failed (may already be member):", e)
+        );
 
         const [ch, mem, msgs] = await Promise.all([
           getChannel(channelId),

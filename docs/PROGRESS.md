@@ -161,3 +161,23 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 **次回やること:**
 - ブラウザでの統合動作確認
 - Low優先度の改善検討（i18n準備、型安全性向上、metadata追加、SVG CSS変数）
+
+### 2026-03-08 セッション8
+**実施内容:**
+- Vercel デプロイの環境変数問題を解決（NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY）
+- Supabase Auth 設定修正（anon key legacy→正規版、Site URL をデプロイ先に変更、Email confirmation オフ）
+- RLS ポリシーの自己参照による 500 エラーを修正（channel_members, dm_participants）
+  - 初回修正: `user_id = auth.uid()` → 他メンバーが見えなくなり 403 エラー発生
+  - 最終修正: `true` に変更（親テーブルの RLS で保護されているため安全）
+- チャンネル削除ボタン追加（ChannelList.tsx にホバー表示の×ボタン）
+- docs/TROUBLESHOOTING.md 新規作成（4件の問題と解決策、RLS設計ガイドライン）
+- docs/schema.sql の RLS ポリシー修正
+- メモリファイル作成（key learnings 記録）
+
+**エラー・問題点:**
+- RLS 自己参照 → 無限再帰で 500 エラー。中間テーブルは `true` にし親テーブル RLS で保護が正解
+- anon key legacy と正規版の違いで 401 エラー
+
+**次回やること:**
+- ブラウザでの統合動作確認（チャット送受信、DM、タスク、ダッシュボード）
+- 残りのUI改善

@@ -88,12 +88,11 @@ export async function getOrCreateDmConversation(otherUserId: string): Promise<st
     }
   }
 
-  // 新規作成
-  const { data: newConvo, error: createErr } = await supabase
+  // 新規作成（INSERT後のSELECTはRLSで弾かれるためidを直接生成）
+  const newId = crypto.randomUUID();
+  const { error: createErr } = await supabase
     .from("dm_conversations")
-    .insert({})
-    .select()
-    .single();
+    .insert({ id: newId });
 
   if (createErr) throw createErr;
 
@@ -101,13 +100,13 @@ export async function getOrCreateDmConversation(otherUserId: string): Promise<st
   const { error: joinErr } = await supabase
     .from("dm_participants")
     .insert([
-      { conversation_id: newConvo.id, user_id: user.id },
-      { conversation_id: newConvo.id, user_id: otherUserId },
+      { conversation_id: newId, user_id: user.id },
+      { conversation_id: newId, user_id: otherUserId },
     ]);
 
   if (joinErr) throw joinErr;
 
-  return newConvo.id;
+  return newId;
 }
 
 /**
