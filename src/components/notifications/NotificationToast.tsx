@@ -1,7 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { getNotificationIcon } from "@/lib/notifications";
+import {
+  AtSign,
+  ClipboardList,
+  Clock,
+  MessageSquare,
+  UserPlus,
+  Mail,
+  Bell,
+} from "lucide-react";
 import type { Notification } from "@/types/database";
 
 interface NotificationToastProps {
@@ -9,11 +17,20 @@ interface NotificationToastProps {
   onDismiss: (id: string) => void;
 }
 
+const iconMap: Record<string, React.ElementType> = {
+  mention: AtSign,
+  task_assigned: ClipboardList,
+  task_due: Clock,
+  task_comment: MessageSquare,
+  channel_invite: UserPlus,
+  dm_message: Mail,
+};
+
 export default function NotificationToast({
   notification,
   onDismiss,
 }: NotificationToastProps) {
-  const icon = getNotificationIcon(notification.type);
+  const IconComponent = iconMap[notification.type] ?? Bell;
 
   return (
     <motion.div
@@ -32,12 +49,12 @@ export default function NotificationToast({
     >
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <span
-          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm"
+        <div
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
           style={{ background: "var(--accent)", color: "#fff" }}
         >
-          {icon}
-        </span>
+          <IconComponent className="w-4 h-4" />
+        </div>
 
         {/* Content */}
         <div className="min-w-0 flex-1">

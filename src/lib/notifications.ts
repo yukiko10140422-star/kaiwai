@@ -95,19 +95,19 @@ export function subscribeToNotifications(
 export function getNotificationIcon(type: NotificationType): string {
   switch (type) {
     case "mention":
-      return "@";
+      return "AtSign";
     case "task_assigned":
-      return "📋";
+      return "ClipboardList";
     case "task_due":
-      return "⏰";
+      return "Clock";
     case "task_comment":
-      return "💬";
+      return "MessageSquare";
     case "channel_invite":
-      return "📨";
+      return "UserPlus";
     case "dm_message":
-      return "✉️";
+      return "Mail";
     default:
-      return "🔔";
+      return "Bell";
   }
 }
 

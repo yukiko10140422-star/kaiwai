@@ -268,3 +268,67 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 - ブラウザでの動作確認（プロジェクト作成→KPI設定→タスク紐付け）
 - タスクフィルターにプロジェクトフィルタ追加
 - タスクカードにプロジェクト名バッジ表示
+
+### 2026-03-08 セッション12
+**実施内容: ビジュアル強化 + メール認証 + モーダル修正**
+
+**メール認証後の自動ログイン:**
+- signup/page.tsx: `emailRedirectTo` 設定追加、`data.session` 存在時の即座リダイレクト
+- invite/[token]/page.tsx: `emailRedirectTo` 設定追加
+- auth/callback/route.ts: オープンリダイレクト脆弱性修正（`next` パラメータ検証）
+
+**ビジュアル強化:**
+- globals.css: `--accent-secondary`, `--glow`, `--gradient-start/end` CSS変数追加
+- ユーティリティクラス追加: `gradient-text`, `gradient-border`, `hover-lift`, `hover-glow`, `focus-glow`, `animated-gradient-bg`
+- キーフレームアニメーション: `gradient-shift`, `float`, `shimmer`, `glow-pulse`
+- カスタムスクロールバー、::selection スタイル
+- ランディングページ: アニメーショングラデーション背景、フローティングロゴ、グラデーションCTAボタン
+- 認証ページ: グラスモーフィズム、フォーカスグロー、グラデーションボタン
+- UIコンポーネント: Button グラデーント、Badge カラーシャドウ、Avatar リングボーダー
+
+**バグ修正:**
+- Modal.tsx: `max-h-[85vh] overflow-y-auto` 追加（スマホでタスク作成モーダルのスクロール不可問題を修正）
+
+### 2026-03-08 セッション13
+**実施内容: 5機能一括実装（並行エージェント5体）**
+
+**1. リアルタイム通知（トースト + ブラウザ通知）:**
+- `NotificationToast.tsx` 新規作成 - Framer Motion スライドアップ+フェード、glass スタイル、5秒自動消去
+- `ToastProvider.tsx` 新規作成 - Supabase Realtime 購読、ブラウザ Notification API 連携（タブ非表示時）
+- dashboard/layout.tsx に ToastProvider 統合
+
+**2. グローバル検索（`/` キーで起動）:**
+- `GlobalSearchDialog.tsx` 新規作成 - コマンドパレット風モーダル、createPortal 使用
+- チャンネル・メッセージ・タスクを横断検索（Promise.all で並行実行）
+- 300ms デバウンス、結果カテゴリ別表示
+- search.ts に `searchTasks()`, `searchChannels()` 追加、`escapeWildcards()` ヘルパー共通化
+- DashboardHeader に検索ボタン + `/` キーリスナー追加
+
+**3. ファイルプレビュー強化:**
+- `FilePreviewModal.tsx` 新規作成 - フルスクリーン画像ライトボックス
+  - マウスホイール/ピンチズーム（0.25x-5x）、ドラッグパン、矢印キーナビゲーション
+  - ダウンロードボタン、ファイル名表示
+- MessageItem.tsx: 画像クリックでライトボックス表示、PDF/音声/アーカイブ等のファイルタイプ別アイコン
+- FileListPanel.tsx: 同様にライトボックス対応、インラインオーディオプレイヤー
+
+**4. ページ遷移アニメーション（Framer Motion）:**
+- `PageTransition.tsx` 新規作成 - フェード+スライドアップラッパー（300ms easeOut）
+- `AnimatedList.tsx` 新規作成 - スタガードリスト入場アニメーション（staggerChildren: 0.05）
+- 全8ダッシュボードページに PageTransition 適用
+- ChannelList, KanbanBoard に AnimatedList 適用
+
+**5. PWA 対応:**
+- `public/manifest.json` - standalone 表示、ダーク背景、アクセントカラー
+- `public/icons/icon.svg` - グラデーション "K" ロゴ
+- `public/sw.js` - アプリシェルキャッシュ、ネットワークファースト/キャッシュファースト戦略
+- `InstallPrompt.tsx` - beforeinstallprompt イベント検知、インストールバナー表示
+- layout.tsx に manifest/meta タグ/SW 登録スクリプト追加
+
+**ビルドエラー修正:**
+- MessageItem.tsx: `JSX.Element` → `ReactNode`（React 19 対応）
+- AnimatedList.tsx: `ease: "easeOut"` → `ease: "easeOut" as const`（Framer Motion 型修正）
+
+**次回やること:**
+- ブラウザでの統合動作確認（全5機能）
+- iOS 向け PWA インストール案内の追加検討
+- カレンダー機能の検討

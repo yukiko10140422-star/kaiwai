@@ -16,6 +16,14 @@ import {
 import { fetchNotifications } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "@/types/database";
+import {
+  ClipboardCheck,
+  FolderOpen,
+  BarChart3,
+  Send,
+  Circle,
+  CircleDot,
+} from "lucide-react";
 
 export default function HomePage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -195,7 +203,13 @@ export default function HomePage() {
                     n.is_read ? "opacity-60" : ""
                   }`}
                 >
-                  <span className="shrink-0 mt-0.5">{n.is_read ? "○" : "●"}</span>
+                  <span className="shrink-0 mt-0.5">
+                    {n.is_read ? (
+                      <Circle className="w-3 h-3 text-muted" />
+                    ) : (
+                      <CircleDot className="w-3 h-3 text-accent" />
+                    )}
+                  </span>
                   <div className="min-w-0">
                     <p className="text-sm truncate">{n.title}</p>
                     {n.body && <p className="text-xs text-muted truncate">{n.body}</p>}
@@ -210,10 +224,10 @@ export default function HomePage() {
         <div className="glass rounded-xl p-4">
           <h2 className="text-sm font-bold mb-3">クイックアクセス</h2>
           <div className="grid grid-cols-2 gap-2">
-            <QuickLink href="/dashboard/tasks" label="タスクボード" icon="📋" />
-            <QuickLink href="/dashboard/projects" label="プロジェクト" icon="📁" />
-            <QuickLink href="/dashboard/progress" label="進捗ダッシュボード" icon="📊" />
-            <QuickLink href="/dashboard/settings/invite" label="メンバー招待" icon="✉️" />
+            <QuickLink href="/dashboard/tasks" label="タスクボード" icon={<ClipboardCheck className="w-5 h-5 text-accent" />} />
+            <QuickLink href="/dashboard/projects" label="プロジェクト" icon={<FolderOpen className="w-5 h-5 text-accent" />} />
+            <QuickLink href="/dashboard/progress" label="進捗ダッシュボード" icon={<BarChart3 className="w-5 h-5 text-accent" />} />
+            <QuickLink href="/dashboard/settings/invite" label="メンバー招待" icon={<Send className="w-5 h-5 text-accent" />} />
           </div>
         </div>
       </div>
@@ -255,13 +269,13 @@ function StatusDot({ status }: { status: string }) {
   return <span className={`w-2 h-2 rounded-full shrink-0 ${colorMap[status] ?? "bg-muted"}`} />;
 }
 
-function QuickLink({ href, label, icon }: { href: string; label: string; icon: string }) {
+function QuickLink({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) {
   return (
     <Link
       href={href}
       className="flex items-center gap-2 p-3 rounded-lg hover:bg-card/80 transition-colors border border-border/50"
     >
-      <span>{icon}</span>
+      {icon}
       <span className="text-sm">{label}</span>
     </Link>
   );

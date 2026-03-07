@@ -1,8 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
+import {
+  AtSign,
+  ClipboardList,
+  Clock,
+  MessageSquare,
+  UserPlus,
+  Mail,
+  Bell,
+} from "lucide-react";
 import type { Notification } from "@/types/database";
-import { getNotificationIcon, formatRelativeTime } from "@/lib/notifications";
+import { formatRelativeTime } from "@/lib/notifications";
 
 interface NotificationListProps {
   notifications: Notification[];
@@ -18,6 +27,24 @@ export default function NotificationList({
   onClose,
 }: NotificationListProps) {
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  const iconMap: Record<string, React.ElementType> = {
+    mention: AtSign,
+    task_assigned: ClipboardList,
+    task_due: Clock,
+    task_comment: MessageSquare,
+    channel_invite: UserPlus,
+    dm_message: Mail,
+  };
+
+  function NotificationIcon({ type }: { type: string }) {
+    const IconComponent = iconMap[type] ?? Bell;
+    return (
+      <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+        <IconComponent className="w-4 h-4 text-accent" />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -69,9 +96,7 @@ export default function NotificationList({
               }`}
             >
               {/* アイコン */}
-              <span className="text-lg shrink-0 mt-0.5">
-                {getNotificationIcon(notification.type)}
-              </span>
+              <NotificationIcon type={notification.type} />
 
               {/* コンテンツ */}
               <div className="flex-1 min-w-0">
