@@ -24,6 +24,7 @@ const navItems = [
   { href: "/dashboard/chat", label: "チャット", icon: ChatIcon },
   { href: "/dashboard/tasks", label: "タスク", icon: TaskIcon },
   { href: "/dashboard/projects", label: "プロジェクト", icon: ProjectIcon },
+  { href: "/dashboard/notes", label: "議事録", icon: NotesIcon },
   { href: "/dashboard/progress", label: "進捗", icon: ProgressIcon },
   { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
 ];
@@ -372,6 +373,14 @@ function ProjectIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+    </svg>
+  );
+}
+
+function NotesIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   );
 }

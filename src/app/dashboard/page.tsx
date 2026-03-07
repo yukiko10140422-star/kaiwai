@@ -8,11 +8,12 @@ import { Avatar } from "@/components/ui";
 import {
   fetchDashboardStats,
   fetchMemberProgress,
-  fetchCalendarTasks,
   type DashboardStats,
   type MemberStat,
-  type CalendarTask,
 } from "@/lib/dashboard";
+import { fetchTasks } from "@/lib/tasks";
+import type { TaskCardData } from "@/components/tasks/TaskCard";
+import TaskDetailModal from "@/components/tasks/TaskDetailModal";
 import { fetchNotifications } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "@/types/database";
@@ -28,10 +29,11 @@ import {
 export default function HomePage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [members, setMembers] = useState<MemberStat[]>([]);
-  const [upcomingTasks, setUpcomingTasks] = useState<CalendarTask[]>([]);
+  const [upcomingTasks, setUpcomingTasks] = useState<TaskCardData[]>([]);
   const [recentNotifications, setRecentNotifications] = useState<Notification[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [greeting, setGreeting] = useState("");
+  const [selectedTask, setSelectedTask] = useState<TaskCardData | null>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -50,11 +52,12 @@ export default function HomePage() {
   useEffect(() => {
     fetchDashboardStats().then(setStats).catch(console.error);
     fetchMemberProgress().then(setMembers).catch(console.error);
-    fetchCalendarTasks()
+    fetchTasks()
       .then((tasks) => {
         const now = new Date();
         const upcoming = tasks
-          .filter((t) => t.status !== "done" && new Date(t.due_date) >= now)
+          .filter((t) => t.status !== "done" && t.due_date && new Date(t.due_date) >= now)
+          .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime())
           .slice(0, 5);
         setUpcomingTasks(upcoming);
       })
@@ -127,13 +130,13 @@ export default function HomePage() {
             <div className="space-y-2">
               {upcomingTasks.map((task) => {
                 const daysLeft = Math.ceil(
-                  (new Date(task.due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+                  (new Date(task.due_date!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
                 );
                 return (
-                  <Link
+                  <button
                     key={task.id}
-                    href="/dashboard/tasks"
-                    className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-card/80 transition-colors"
+                    onClick={() => setSelectedTask(task)}
+                    className="w-full flex items-center justify-between py-2 px-3 rounded-lg hover:bg-card/80 transition-colors text-left"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <StatusDot status={task.status} />
@@ -146,7 +149,7 @@ export default function HomePage() {
                     >
                       {daysLeft <= 0 ? "今日" : daysLeft === 1 ? "明日" : `${daysLeft}日後`}
                     </span>
-                  </Link>
+                  </button>
                 );
               })}
             </div>
@@ -231,6 +234,8 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
     </PageTransition>
   );
 }

@@ -9,12 +9,15 @@ import {
   MemberProgress,
 } from "@/components/dashboard";
 import PageTransition from "@/components/ui/PageTransition";
+import TaskDetailModal from "@/components/tasks/TaskDetailModal";
 import {
   fetchDashboardStats,
   fetchMemberProgress,
   fetchProjectProgress,
   fetchCalendarTasks,
 } from "@/lib/dashboard";
+import { fetchTasks } from "@/lib/tasks";
+import type { TaskCardData } from "@/components/tasks/TaskCard";
 import type {
   DashboardStats,
   MemberStat,
@@ -27,22 +30,26 @@ export default function ProgressPage() {
   const [members, setMembers] = useState<MemberStat[]>([]);
   const [projects, setProjects] = useState<ProjectProgress[]>([]);
   const [calendarTasks, setCalendarTasks] = useState<CalendarTask[]>([]);
+  const [allTasks, setAllTasks] = useState<TaskCardData[]>([]);
+  const [selectedTask, setSelectedTask] = useState<TaskCardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const [s, m, p, c] = await Promise.all([
+        const [s, m, p, c, t] = await Promise.all([
           fetchDashboardStats(),
           fetchMemberProgress(),
           fetchProjectProgress(),
           fetchCalendarTasks(),
+          fetchTasks(),
         ]);
         setStats(s);
         setMembers(m);
         setProjects(p);
         setCalendarTasks(c);
+        setAllTasks(t);
       } catch (e) {
         setError(e instanceof Error ? e.message : "データの取得に失敗しました");
       } finally {
@@ -154,7 +161,13 @@ export default function ProgressPage() {
 
       {/* カレンダー */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
-        <CalendarView tasks={calendarTasks} />
+        <CalendarView
+          tasks={calendarTasks}
+          onTaskClick={(taskId) => {
+            const found = allTasks.find((t) => t.id === taskId);
+            if (found) setSelectedTask(found);
+          }}
+        />
 
         {/* 今週のタスク */}
         <div className="glass rounded-2xl p-5">
@@ -191,6 +204,8 @@ export default function ProgressPage() {
           </div>
         </div>
       </div>
+
+      <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
     </PageTransition>
   );
 }

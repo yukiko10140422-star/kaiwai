@@ -1,7 +1,7 @@
 # KAIWAI - 進捗ログ
 
 ## 現在のフェーズ
-Phase 1: 基盤構築（完了）→ Phase 2 開始可能
+Phase 5: ポリッシュ（進行中）
 
 ## 全体進捗
 
@@ -332,3 +332,53 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 - ブラウザでの統合動作確認（全5機能）
 - iOS 向け PWA インストール案内の追加検討
 - カレンダー機能の検討
+
+### 2026-03-08 セッション14
+**実施内容: モバイルUX改善 + PWA修正 + UIポリッシュ + 議事録機能**
+
+**iOS PWA修正:**
+- apple-mobile-web-app-capable meta タグが Next.js metadata export から生成されない問題を発見・修正（layout.tsx に手動 meta タグ追加）
+- manifest.json: display を "fullscreen" → "standalone" に戻す（iOS は fullscreen 未対応）
+- display_override 削除
+- iOS 18.5 でアドレスバーが消えない問題は未解決（iOS側の制限の可能性）
+
+**モバイルUI刷新:**
+- 5タブボトムナビ（ホーム/チャット/タスク/PJ/設定）に変更、ハンバーガーメニュー廃止
+- `/dashboard/chat` ページ新規作成（チャンネル・DM一覧、タブ切替、未読バッジ、作成機能）
+- ホームページをフルダッシュボード化（統計カード、締め切り、メンバー進捗、通知、クイックアクセス）
+- アイコンを KAIWAI グラデーションテキストロゴに変更（apple-icon.tsx, icon.tsx, icon.svg）
+
+**モバイルパフォーマンス最適化:**
+- backdrop-blur を 8px に軽減（モバイルのみ）
+- アニメーション duration を 0.15s/0.1s に短縮（モバイルのみ）
+- hover-glow, gradient-border をモバイルで無効化
+- -webkit-tap-highlight-color: transparent 追加
+
+**UX改善（コードレビュー7件修正）:**
+- エラー時のトースト通知追加（showToast ユーティリティ、ToastContainer コンポーネント）
+- Modal.tsx にフォーカストラップ追加（Tab キーサイクリング、role="dialog", aria-modal）
+- Button/Input の min-h を 44px に統一（モバイルタッチターゲット）
+- チャットメッセージの楽観的UI更新（即座に表示、失敗時ロールバック）
+- 未読ステータスのDB永続化（updateReadStatus, updateDmReadStatus）
+
+**全Unicode絵文字をLucide Reactアイコンに置換:**
+- NotificationList: AtSign, ClipboardList, Clock, MessageSquare, Hash, Mail アイコン
+- NotificationToast: Bell, MessageSquare, ClipboardList, Clock, Hash, Mail アイコン
+- QuickLink: ClipboardCheck, FolderOpen, BarChart3, Send アイコン
+- lucide-react パッケージ追加
+
+**ホームタスク詳細表示:**
+- ダッシュボードの「直近の締め切り」タスクをクリックで TaskDetailModal 表示
+
+**議事録（Meeting Notes）機能:**
+- MeetingNote 型を database.ts に追加
+- src/lib/meeting-notes.ts 新規作成（CRUD: fetch/create/update/delete、MeetingNoteWithAuthor 型）
+- src/app/dashboard/notes/page.tsx 新規作成（一覧/作成/閲覧/編集/削除、プロジェクト紐付け）
+- Sidebar.tsx に NotesIcon + 議事録ナビ追加
+- DB テーブル未作成（Supabase ダッシュボードでの SQL 実行が必要）
+
+**次回やること:**
+- meeting_notes テーブルを Supabase で作成（SQL提供済み）
+- カレンダーのタスクポップオーバー
+- ブラウザでの統合動作確認
+- README/マニュアル作成

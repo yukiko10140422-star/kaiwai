@@ -196,6 +196,21 @@ export interface Invitation {
 }
 
 // ------------------------------------------------------------
+// Meeting Notes (議事録)
+// ------------------------------------------------------------
+
+export interface MeetingNote {
+  id: string;
+  title: string;
+  content: string;
+  meeting_date: string;
+  project_id: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ------------------------------------------------------------
 // Read status (未読管理)
 // ------------------------------------------------------------
 
@@ -317,6 +332,11 @@ export interface Database {
         Row: DmReadStatus;
         Insert: DmReadStatus;
         Update: Partial<DmReadStatus>;
+      };
+      meeting_notes: {
+        Row: MeetingNote;
+        Insert: Omit<MeetingNote, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<MeetingNote, 'id' | 'created_at'>>;
       };
       activity_logs: {
         Row: ActivityLog;

@@ -313,6 +313,21 @@ CREATE TABLE kpi_goals (
 );
 ALTER TABLE kpi_goals ENABLE ROW LEVEL SECURITY;
 
+-- ----------------------------------------------------------
+-- 3.21 Meeting Notes (議事録)
+-- ----------------------------------------------------------
+CREATE TABLE meeting_notes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL DEFAULT '',
+  meeting_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+  created_by UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE meeting_notes ENABLE ROW LEVEL SECURITY;
+
 -- ============================================================
 -- 4. INDEXES
 -- ============================================================
@@ -338,6 +353,9 @@ CREATE INDEX idx_kpi_goals_project_id ON kpi_goals(project_id);
 CREATE INDEX idx_kpi_goals_timeframe ON kpi_goals(project_id, timeframe);
 CREATE INDEX idx_invitations_email ON invitations(email);
 CREATE INDEX idx_invitations_token ON invitations(token);
+CREATE INDEX idx_meeting_notes_created_by ON meeting_notes(created_by);
+CREATE INDEX idx_meeting_notes_project_id ON meeting_notes(project_id);
+CREATE INDEX idx_meeting_notes_meeting_date ON meeting_notes(meeting_date DESC);
 
 -- ============================================================
 -- 5. ROW LEVEL SECURITY POLICIES
@@ -551,6 +569,16 @@ CREATE POLICY "activity_logs_select" ON activity_logs FOR SELECT
 CREATE POLICY "activity_logs_insert" ON activity_logs FOR INSERT
   TO authenticated WITH CHECK (user_id = auth.uid());
 
+-- ----- meeting_notes -----
+CREATE POLICY "meeting_notes_select" ON meeting_notes FOR SELECT
+  TO authenticated USING (true);
+CREATE POLICY "meeting_notes_insert" ON meeting_notes FOR INSERT
+  TO authenticated WITH CHECK (auth.uid() = created_by);
+CREATE POLICY "meeting_notes_update" ON meeting_notes FOR UPDATE
+  TO authenticated USING (auth.uid() = created_by);
+CREATE POLICY "meeting_notes_delete" ON meeting_notes FOR DELETE
+  TO authenticated USING (auth.uid() = created_by);
+
 -- ----- kpi_goals -----
 CREATE POLICY "kpi_goals_select" ON kpi_goals FOR SELECT
   TO authenticated USING (true);
@@ -588,6 +616,8 @@ CREATE TRIGGER task_comments_updated_at
   BEFORE UPDATE ON task_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER kpi_goals_updated_at
   BEFORE UPDATE ON kpi_goals FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER meeting_notes_updated_at
+  BEFORE UPDATE ON meeting_notes FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- 新規ユーザー登録時に profiles レコードを自動作成
 CREATE OR REPLACE FUNCTION handle_new_user()
