@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 
@@ -11,6 +12,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +20,14 @@ export default function SignupPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           display_name: displayName,
         },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -34,6 +37,13 @@ export default function SignupPage() {
       return;
     }
 
+    // If email confirmation is disabled, user is immediately authenticated
+    if (data.session) {
+      router.push("/dashboard");
+      return;
+    }
+
+    // Otherwise show "check your email" message
     setPassword("");
     setSuccess(true);
     setLoading(false);
@@ -46,7 +56,10 @@ export default function SignupPage() {
         <div className="glass rounded-3xl p-8 w-full max-w-sm mx-4 text-center relative hover-glow">
           <h1 className="text-2xl font-bold mb-2 gradient-text">確認メールを送信しました</h1>
           <p className="text-muted text-sm mb-4">
-            {email} に確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。
+            {email} に確認メールを送信しました。メール内のリンクをクリックすると、自動的にログインしてダッシュボードに移動します。
+          </p>
+          <p className="text-muted text-xs mb-4">
+            メールが届かない場合は迷惑メールフォルダをご確認ください。
           </p>
           <Link
             href="/auth/login"

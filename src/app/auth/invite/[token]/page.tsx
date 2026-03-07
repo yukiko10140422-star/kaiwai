@@ -48,6 +48,7 @@ export default function InviteAcceptPage() {
         password,
         options: {
           data: { display_name: displayName },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
