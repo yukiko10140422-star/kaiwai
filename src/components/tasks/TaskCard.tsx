@@ -54,7 +54,7 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
         nativeEvent.nativeEvent?.dataTransfer?.setData("text/plain", task.id);
       }}
       onClick={() => onClick(task)}
-      className={`glass rounded-xl p-4 cursor-pointer select-none transition-shadow hover:shadow-lg ${
+      className={`glass gradient-border rounded-xl p-4 cursor-pointer select-none transition-all hover:shadow-lg hover:shadow-accent/10 ${
         isDragging ? "opacity-50" : ""
       }`}
       whileHover={{ y: -2 }}

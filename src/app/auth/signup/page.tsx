@@ -40,9 +40,10 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="glass rounded-2xl p-8 w-full max-w-sm mx-4 text-center">
-          <h1 className="text-2xl font-bold mb-2">確認メールを送信しました</h1>
+      <div className="animated-gradient-bg flex min-h-screen items-center justify-center relative overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+        <div className="glass rounded-3xl p-8 w-full max-w-sm mx-4 text-center relative hover-glow">
+          <h1 className="text-2xl font-bold mb-2 gradient-text">確認メールを送信しました</h1>
           <p className="text-muted text-sm mb-4">
             {email} に確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。
           </p>
@@ -58,9 +59,12 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="glass rounded-2xl p-8 w-full max-w-sm mx-4">
-        <h1 className="text-2xl font-bold mb-1">新規登録</h1>
+    <div className="animated-gradient-bg flex min-h-screen items-center justify-center relative overflow-hidden">
+      <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-accent-secondary/10 blur-3xl pointer-events-none" />
+
+      <div className="glass rounded-3xl p-8 w-full max-w-sm mx-4 relative hover-glow">
+        <h1 className="text-2xl font-bold mb-1 gradient-text">新規登録</h1>
         <p className="text-muted text-sm mb-6">アカウントを作成する</p>
 
         <form onSubmit={handleSignup} className="flex flex-col gap-4">
@@ -74,7 +78,7 @@ export default function SignupPage() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus-glow transition-all"
               placeholder="あなたの名前"
             />
           </div>
@@ -89,7 +93,7 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus-glow transition-all"
               placeholder="you@example.com"
             />
           </div>
@@ -105,7 +109,7 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus-glow transition-all"
               placeholder="6文字以上"
             />
           </div>
@@ -117,7 +121,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-accent px-4 py-2.5 text-white font-medium transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-secondary px-4 py-2.5 text-white font-medium transition-all hover:shadow-lg hover:shadow-accent/25 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
           >
             {loading ? "登録中..." : "アカウント作成"}
           </button>

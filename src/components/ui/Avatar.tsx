@@ -35,7 +35,7 @@ export default function Avatar({ src, name, size = "md", className = "" }: Avata
         alt={name}
         width={px}
         height={px}
-        className={`rounded-full object-cover ${className}`}
+        className={`rounded-full object-cover ring-2 ring-background ${className}`}
         style={{ width: px, height: px }}
       />
     );
@@ -43,7 +43,7 @@ export default function Avatar({ src, name, size = "md", className = "" }: Avata
 
   return (
     <div
-      className={`inline-flex items-center justify-center rounded-full bg-accent text-white font-medium ${text} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-secondary text-white font-medium ring-2 ring-background ${text} ${className}`}
       style={{ width: px, height: px }}
       aria-label={name}
     >

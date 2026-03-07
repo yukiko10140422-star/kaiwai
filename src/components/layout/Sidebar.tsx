@@ -50,7 +50,7 @@ export default function Sidebar({ user }: SidebarProps) {
         animate={isCollapsed ? "collapsed" : "expanded"}
         variants={sidebarVariants}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="hidden md:flex flex-col h-screen bg-sidebar border-r border-border shrink-0 overflow-hidden"
+        className="hidden md:flex flex-col h-screen bg-sidebar/90 backdrop-blur-md border-r border-border shrink-0 overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 h-16 border-b border-border">
@@ -61,7 +61,7 @@ export default function Sidebar({ user }: SidebarProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="font-bold text-lg whitespace-nowrap"
+                className="font-extrabold text-lg whitespace-nowrap gradient-text"
               >
                 KAIWAI
               </motion.span>
