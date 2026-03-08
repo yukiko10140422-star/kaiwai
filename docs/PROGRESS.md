@@ -336,5 +336,36 @@ Phase 5: ポリッシュ（継続中）
 
 **次回やること:**
 - ブラウザ/モバイル実機で長押しメニューの動作確認
-- タスクの担当者変更 UI（編集モードに未実装）
-- プロジェクト管理機能の拡充
+- バッチ2の実装
+
+### 2026-03-08 セッション10
+**実施内容: バッチ1実装（3タスク並行）**
+
+**Task U: タスク担当者変更UI:**
+- TaskDetailModal 編集モードに担当者マルチセレクト追加
+- TaskCreateModal と同じトグルボタンUI
+- 保存時に `setTaskAssignees` でDB更新
+- members prop: tasks/page.tsx → KanbanBoard → TaskDetailModal
+
+**Task W: タスクコメントUI:**
+- TaskDetailModal ビューモードにコメントセクション追加
+- `fetchTaskComments` / `createTaskComment` API使用
+- アバター、相対時刻表示、Ctrl+Enter送信対応
+- 空状態メッセージ、最大高さスクロール
+
+**Task X: ダークモード配色調整:**
+- `--card`: `rgba(255,255,255,0.05)` → `0.08`（カード視認性向上）
+- `--muted`: `#64748b` → `#94a3b8`（テキストコントラスト改善）
+- `--border`: `#334155` → `#3b4a5e`（区切り線視認性向上）
+- ダーク用 `.glass` box-shadow 追加
+- コンテキストメニューのホバー色修正
+
+**変更ファイル:**
+- `src/components/tasks/TaskDetailModal.tsx` - 担当者選択 + コメントUI
+- `src/components/tasks/KanbanBoard.tsx` - members prop パススルー
+- `src/app/dashboard/tasks/page.tsx` - members を KanbanBoard に渡す
+- `src/app/globals.css` - ダークモード変数調整
+- `src/components/chat/MessageItem.tsx` - コンテキストメニューホバー修正
+
+**次回やること:**
+- バッチ2の実装（期限通知、ピン留め、既読表示、アクティビティログ）

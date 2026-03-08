@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.5.0";
+const CURRENT_VERSION = "1.6.0";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,16 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.6.0",
+    date: "2026-03-08",
+    title: "タスク管理がパワーアップ",
+    items: [
+      { type: "new", text: "タスクの担当者を編集画面から変更できるようになりました" },
+      { type: "new", text: "タスクにコメントを書いて、チームで相談できるようになりました" },
+      { type: "improve", text: "ダークモードの見やすさを改善しました" },
+    ],
+  },
   {
     version: "1.5.0",
     date: "2026-03-08",
