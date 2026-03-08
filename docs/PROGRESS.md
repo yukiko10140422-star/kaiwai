@@ -367,5 +367,47 @@ Phase 5: ポリッシュ（継続中）
 - `src/app/globals.css` - ダークモード変数調整
 - `src/components/chat/MessageItem.tsx` - コンテキストメニューホバー修正
 
+### 2026-03-08 セッション10（続き）
+**実施内容: バッチ2実装（4タスク並行）**
+
+**Task Y: タスク期限通知:**
+- `task-due-check.ts`: 期限切れ/本日/明日のタスクを自動チェック
+- `TaskDueChecker.tsx`: ダッシュボードロード時に1日1回チェック（sessionStorage管理）
+- 担当者（assignee_id + task_assignees）のみに通知、重複防止
+
+**Task Z: ピン留めメッセージ:**
+- `pinMessage`/`unpinMessage`/`getPinnedMessages` をchat.tsに追加
+- コンテキストメニューに「ピン留め」ボタン追加（全ユーザー操作可能）
+- `PinnedMessages.tsx`: チャンネルヘッダーにピンアイコン → ドロップダウンで一覧表示
+- ChannelHeader にピンボタン追加
+- 注意: DB に `ALTER TABLE messages ADD COLUMN is_pinned BOOLEAN DEFAULT false;` が必要
+
+**Task AA: メッセージ既読表示:**
+- `getChannelReadStatuses`/`getDmReadStatuses` 関数追加
+- MessageItem に `readCount` prop追加、自分のメッセージに「既読 N」表示
+- チャンネル/DMページで10秒ごとに既読状態を更新
+
+**Task AB: アクティビティログUI:**
+- `activity.ts`: fetchActivityLogs, logActivity, getActionLabel
+- `ActivityTimeline.tsx`: タイムライン表示（アバター、アクション、相対時刻）
+- 進捗ダッシュボードに統合
+
+**変更ファイル:**
+- `src/lib/task-due-check.ts` - 新規
+- `src/components/notifications/TaskDueChecker.tsx` - 新規
+- `src/lib/chat.ts` - ピン留め関数追加
+- `src/components/chat/PinnedMessages.tsx` - 新規
+- `src/components/chat/ChannelHeader.tsx` - ピンボタン追加
+- `src/components/chat/MessageItem.tsx` - ピン留め + 既読表示
+- `src/components/chat/MessageList.tsx` - onPin + readStatuses props
+- `src/app/dashboard/chat/[channelId]/page.tsx` - ピン + 既読統合
+- `src/app/dashboard/dm/[conversationId]/page.tsx` - 既読統合
+- `src/lib/dm.ts` - getDmReadStatuses追加
+- `src/lib/activity.ts` - 新規
+- `src/components/dashboard/ActivityTimeline.tsx` - 新規
+- `src/app/dashboard/progress/page.tsx` - アクティビティ統合
+- `src/types/database.ts` - is_pinned追加
+
 **次回やること:**
-- バッチ2の実装（期限通知、ピン留め、既読表示、アクティビティログ）
+- DB: `ALTER TABLE messages ADD COLUMN is_pinned BOOLEAN DEFAULT false;`
+- バッチ3の実装

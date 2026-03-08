@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.6.0";
+const CURRENT_VERSION = "1.7.0";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,17 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.7.0",
+    date: "2026-03-08",
+    title: "チャット・通知がもっと便利に",
+    items: [
+      { type: "new", text: "大事なメッセージをピン留めして、いつでも見返せるようになりました" },
+      { type: "new", text: "メッセージに「既読」が表示されるようになりました（LINE風）" },
+      { type: "new", text: "タスクの期限が近づくと自動で通知が届くようになりました" },
+      { type: "new", text: "ダッシュボードに「アクティビティ」が表示されるようになりました" },
+    ],
+  },
   {
     version: "1.6.0",
     date: "2026-03-08",
