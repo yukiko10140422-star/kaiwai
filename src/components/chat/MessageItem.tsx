@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
 import { Avatar } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { parseMessageSegments } from "@/lib/mentions";
 import type { Message, MessageAttachment, MessageReaction, Profile } from "@/types/database";
-import { toggleReaction, groupReactions } from "@/lib/reactions";
+import { toggleReaction, groupReactions, QUICK_EMOJIS } from "@/lib/reactions";
 import ReactionBar from "./ReactionBar";
-import ReactionPicker from "./ReactionPicker";
 import FilePreviewModal from "./FilePreviewModal";
 import UrlPreview from "./UrlPreview";
 
@@ -309,11 +308,12 @@ function ImageLightbox({
 
 export default function MessageItem({ message, currentUserId, isGrouped = false, onThreadClick, onDelete, onEdit, memberNames = [] }: MessageItemProps) {
   const [reactions, setReactions] = useState<MessageReaction[]>(message.reactions ?? []);
-  const [showPicker, setShowPicker] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [showMenu, setShowMenu] = useState(false);
+  const [contextMenu, setContextMenu] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const longPressTriggered = useRef(false);
 
   const isOwn = message.user_id === currentUserId;
 
@@ -337,6 +337,7 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
 
   const handleToggle = useCallback(
     async (emoji: string) => {
+      setContextMenu(false);
       const existing = reactions.find(
         (r) => r.user_id === currentUserId && r.emoji === emoji
       );
@@ -370,6 +371,29 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
     [reactions, currentUserId, message.id]
   );
 
+  // Long press handlers (mobile)
+  const handleTouchStart = useCallback(() => {
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      setContextMenu(true);
+    }, 500);
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    clearTimeout(longPressTimer.current);
+  }, []);
+
+  const handleTouchMove = useCallback(() => {
+    clearTimeout(longPressTimer.current);
+  }, []);
+
+  // Right-click handler (PC)
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu(true);
+  }, []);
+
   return (
     <div
       className={`group relative flex gap-2 px-3 sm:px-4 py-1 ${isOwn ? "flex-row-reverse" : ""}`}
@@ -391,7 +415,7 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
             )}
             <span className="text-[10px] text-muted">{formatTime(message.created_at)}</span>
             {message.is_edited && (
-              <span className="text-[10px] text-muted">(edited)</span>
+              <span className="text-[10px] text-muted">(編集済み)</span>
             )}
           </div>
         )}
@@ -426,11 +450,15 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
           </div>
         ) : (
           <div
-            className={`relative rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+            className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words select-none ${
               isOwn
                 ? "bg-accent text-white rounded-br-sm"
                 : "bg-card border border-border rounded-bl-sm"
             }`}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchMove={handleTouchMove}
+            onContextMenu={handleContextMenu}
           >
             {contentSegments.map((seg, i) =>
               seg.type === "mention" ? (
@@ -440,57 +468,6 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
               ) : (
                 <span key={i}>{seg.value}</span>
               )
-            )}
-
-            {/* Message action menu (own messages) */}
-            {isOwn && (onDelete || onEdit) && (
-              <div className="absolute -top-2 right-0 flex sm:hidden sm:group-hover:flex">
-                <div className="relative">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowMenu((v) => !v); }}
-                    className="p-1 rounded-full bg-background/80 border border-border shadow-sm text-muted hover:text-foreground"
-                    aria-label="メッセージメニュー"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                    </svg>
-                  </button>
-                  {showMenu && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                      <div className="absolute right-0 top-full mt-1 z-50 bg-sidebar border border-border rounded-lg shadow-lg py-1 min-w-[100px]">
-                        {onEdit && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditContent(message.content);
-                              setEditing(true);
-                              setShowMenu(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-xs hover:bg-card transition-colors"
-                          >
-                            編集
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm("このメッセージを取り消しますか？")) {
-                                onDelete(message.id);
-                              }
-                              setShowMenu(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-xs text-status-overdue hover:bg-card transition-colors"
-                          >
-                            取り消し
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
             )}
           </div>
         )}
@@ -521,7 +498,7 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
           />
         )}
 
-        {/* Reactions */}
+        {/* Reactions (existing reactions always visible) */}
         <ReactionBar reactions={grouped} onToggle={handleToggle} />
 
         {/* Thread indicator */}
@@ -530,31 +507,84 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
             onClick={() => onThreadClick?.(message.id)}
             className="mt-1 text-xs text-accent hover:underline"
           >
-            {message.reply_count} replies
+            {message.reply_count} 件の返信
           </button>
         )}
       </div>
 
-      {/* Reaction picker trigger */}
-      <div className={`self-center flex sm:hidden sm:group-hover:flex items-center ${isOwn ? "mr-1" : "ml-1"}`}>
-        <div className="relative">
-          <button
-            onClick={() => setShowPicker((v) => !v)}
-            className="p-1.5 rounded-full hover:bg-border/40 text-muted hover:text-foreground"
-            aria-label="リアクションを追加"
+      {/* ===== Context menu (long-press / right-click) ===== */}
+      {contextMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setContextMenu(false)} />
+          <div
+            className={`absolute z-50 ${isOwn ? "right-12" : "left-12"} top-0 bg-sidebar border border-border rounded-xl shadow-xl overflow-hidden min-w-[180px]`}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </button>
-          {showPicker && (
-            <ReactionPicker
-              onSelect={handleToggle}
-              onClose={() => setShowPicker(false)}
-            />
-          )}
-        </div>
-      </div>
+            {/* Quick reactions */}
+            <div className="flex gap-0.5 px-2 py-2 border-b border-border">
+              {QUICK_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleToggle(emoji)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-border/40 active:scale-90 transition-all text-lg"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="py-1">
+              {onThreadClick && (
+                <button
+                  onClick={() => {
+                    onThreadClick(message.id);
+                    setContextMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-card transition-colors text-left"
+                >
+                  <svg className="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                  </svg>
+                  スレッドで返信
+                </button>
+              )}
+
+              {isOwn && onEdit && (
+                <button
+                  onClick={() => {
+                    setEditContent(message.content);
+                    setEditing(true);
+                    setContextMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-card transition-colors text-left"
+                >
+                  <svg className="w-4 h-4 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />
+                  </svg>
+                  編集
+                </button>
+              )}
+
+              {isOwn && onDelete && (
+                <button
+                  onClick={() => {
+                    setContextMenu(false);
+                    if (confirm("このメッセージを取り消しますか？")) {
+                      onDelete(message.id);
+                    }
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-card transition-colors text-left text-status-overdue"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  取り消し
+                </button>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
