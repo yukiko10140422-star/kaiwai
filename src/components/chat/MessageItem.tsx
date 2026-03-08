@@ -23,6 +23,8 @@ interface MessageItemProps {
   currentUserId: string;
   isGrouped?: boolean;
   onThreadClick?: (messageId: string) => void;
+  onDelete?: (messageId: string) => void;
+  onEdit?: (messageId: string, content: string) => void;
   memberNames?: string[];
 }
 
@@ -305,10 +307,13 @@ function ImageLightbox({
   );
 }
 
-export default function MessageItem({ message, currentUserId, isGrouped = false, onThreadClick, memberNames = [] }: MessageItemProps) {
+export default function MessageItem({ message, currentUserId, isGrouped = false, onThreadClick, onDelete, onEdit, memberNames = [] }: MessageItemProps) {
   const [reactions, setReactions] = useState<MessageReaction[]>(message.reactions ?? []);
   const [showPicker, setShowPicker] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
 
   const isOwn = message.user_id === currentUserId;
 
@@ -391,23 +396,104 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
           </div>
         )}
 
-        <div
-          className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
-            isOwn
-              ? "bg-accent text-white rounded-br-sm"
-              : "bg-card border border-border rounded-bl-sm"
-          }`}
-        >
-          {contentSegments.map((seg, i) =>
-            seg.type === "mention" ? (
-              <span key={i} className={`font-semibold rounded px-0.5 ${isOwn ? "text-white/90 bg-white/20" : "text-accent bg-accent/10"}`}>
-                {seg.value}
-              </span>
-            ) : (
-              <span key={i}>{seg.value}</span>
-            )
-          )}
-        </div>
+        {editing ? (
+          <div className="flex flex-col gap-1 w-full">
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none min-h-[44px]"
+              rows={2}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (editContent.trim() && editContent !== message.content) {
+                    onEdit?.(message.id, editContent.trim());
+                  }
+                  setEditing(false);
+                }
+                if (e.key === "Escape") {
+                  setEditContent(message.content);
+                  setEditing(false);
+                }
+              }}
+            />
+            <div className="flex gap-1 text-[10px] text-muted">
+              <span>Enter で保存</span>
+              <span>・</span>
+              <span>Esc でキャンセル</span>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`relative rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+              isOwn
+                ? "bg-accent text-white rounded-br-sm"
+                : "bg-card border border-border rounded-bl-sm"
+            }`}
+          >
+            {contentSegments.map((seg, i) =>
+              seg.type === "mention" ? (
+                <span key={i} className={`font-semibold rounded px-0.5 ${isOwn ? "text-white/90 bg-white/20" : "text-accent bg-accent/10"}`}>
+                  {seg.value}
+                </span>
+              ) : (
+                <span key={i}>{seg.value}</span>
+              )
+            )}
+
+            {/* Message action menu (own messages) */}
+            {isOwn && (onDelete || onEdit) && (
+              <div className="absolute -top-2 right-0 flex sm:hidden sm:group-hover:flex">
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowMenu((v) => !v); }}
+                    className="p-1 rounded-full bg-background/80 border border-border shadow-sm text-muted hover:text-foreground"
+                    aria-label="メッセージメニュー"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                    </svg>
+                  </button>
+                  {showMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                      <div className="absolute right-0 top-full mt-1 z-50 bg-sidebar border border-border rounded-lg shadow-lg py-1 min-w-[100px]">
+                        {onEdit && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditContent(message.content);
+                              setEditing(true);
+                              setShowMenu(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-xs hover:bg-card transition-colors"
+                          >
+                            編集
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm("このメッセージを取り消しますか？")) {
+                                onDelete(message.id);
+                              }
+                              setShowMenu(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-xs text-status-overdue hover:bg-card transition-colors"
+                          >
+                            取り消し
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* URL Previews */}
         <UrlPreview content={message.content} />

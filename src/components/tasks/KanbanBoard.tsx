@@ -5,11 +5,13 @@ import { Badge } from "@/components/ui";
 import TaskCard, { type TaskCardData } from "./TaskCard";
 import TaskDetailModal from "./TaskDetailModal";
 import type { TaskStatus } from "@/types/database";
+import type { UpdateTaskInput } from "@/lib/tasks";
 
 interface KanbanBoardProps {
   tasks: TaskCardData[];
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
   onDelete?: (taskId: string) => void;
+  onUpdate?: (taskId: string, input: UpdateTaskInput) => Promise<void>;
 }
 
 const columns: { status: TaskStatus; label: string; variant: "todo" | "progress" | "review" | "done" }[] = [
@@ -19,7 +21,7 @@ const columns: { status: TaskStatus; label: string; variant: "todo" | "progress"
   { status: "done", label: "完了", variant: "done" },
 ];
 
-export default function KanbanBoard({ tasks, onStatusChange, onDelete }: KanbanBoardProps) {
+export default function KanbanBoard({ tasks, onStatusChange, onDelete, onUpdate }: KanbanBoardProps) {
   const [selectedTask, setSelectedTask] = useState<TaskCardData | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
@@ -105,6 +107,12 @@ export default function KanbanBoard({ tasks, onStatusChange, onDelete }: KanbanB
           );
         }}
         onDelete={onDelete}
+        onUpdate={onUpdate ? async (taskId, input) => {
+          await onUpdate(taskId, input);
+          setSelectedTask((prev) =>
+            prev && prev.id === taskId ? { ...prev, ...input } as TaskCardData : prev
+          );
+        } : undefined}
       />
     </>
   );

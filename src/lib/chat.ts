@@ -312,7 +312,8 @@ export async function updateReadStatus(channelId: string): Promise<void> {
 export function subscribeToChannel(
   channelId: string,
   onNewMessage: (message: Message) => void,
-  onDeleteMessage?: (messageId: string) => void
+  onDeleteMessage?: (messageId: string) => void,
+  onUpdateMessage?: (message: Message) => void
 ): RealtimeChannel {
   const supabase = createClient();
   return supabase
@@ -339,6 +340,18 @@ export function subscribeToChannel(
       },
       (payload) => {
         onDeleteMessage?.(payload.old.id as string);
+      }
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+        filter: `channel_id=eq.${channelId}`,
+      },
+      (payload) => {
+        onUpdateMessage?.(payload.new as Message);
       }
     )
     .subscribe();

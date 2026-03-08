@@ -17,9 +17,11 @@ import {
   fetchProjects,
   updateTaskStatus,
   createTask,
+  updateTask,
   deleteTask,
   subscribeToTasks,
   type TaskChangePayload,
+  type UpdateTaskInput,
 } from "@/lib/tasks";
 
 const priorityWeight: Record<TaskPriority, number> = { high: 3, medium: 2, low: 1 };
@@ -117,6 +119,12 @@ export default function TasksPage() {
     setTasks(data);
   }, []);
 
+  const handleUpdateTask = useCallback(async (taskId: string, input: UpdateTaskInput) => {
+    await updateTask(taskId, input);
+    const data = await fetchTasks();
+    setTasks(data);
+  }, []);
+
   const handleDeleteTask = useCallback(async (taskId: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
     try {
@@ -204,7 +212,7 @@ export default function TasksPage() {
 
       {/* Kanban */}
       <div className="flex-1 min-h-0">
-        <KanbanBoard tasks={filteredTasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} />
+        <KanbanBoard tasks={filteredTasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} onUpdate={handleUpdateTask} />
       </div>
 
       <TaskCreateModal

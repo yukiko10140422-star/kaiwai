@@ -16,6 +16,8 @@ import {
   getChannelMembers,
   getMessages,
   sendMessage,
+  deleteMessage,
+  editMessage,
   subscribeToChannel,
   unsubscribeFromChannel,
   updateReadStatus,
@@ -146,6 +148,15 @@ export default function ChannelPage() {
       },
       (deletedId: string) => {
         setMessages((prev) => prev.filter((m) => m.id !== deletedId));
+      },
+      (updatedMsg: Message) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === updatedMsg.id
+              ? { ...m, content: updatedMsg.content, is_edited: updatedMsg.is_edited }
+              : m
+          )
+        );
       }
     );
 
@@ -187,6 +198,31 @@ export default function ChannelPage() {
     [channelId, currentUserId, currentUserProfile]
   );
 
+  const handleDeleteMessage = useCallback(async (messageId: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    try {
+      await deleteMessage(messageId);
+    } catch (e) {
+      console.error("Failed to delete message:", e);
+      // Re-fetch on error
+      const msgs = await getMessages(channelId);
+      setMessages(msgs);
+    }
+  }, [channelId]);
+
+  const handleEditMessage = useCallback(async (messageId: string, content: string) => {
+    setMessages((prev) =>
+      prev.map((m) => m.id === messageId ? { ...m, content, is_edited: true } : m)
+    );
+    try {
+      await editMessage(messageId, content);
+    } catch (e) {
+      console.error("Failed to edit message:", e);
+      const msgs = await getMessages(channelId);
+      setMessages(msgs);
+    }
+  }, [channelId]);
+
   const handleThreadClick = useCallback((messageId: string) => {
     setThreadMessageId(messageId);
   }, []);
@@ -224,6 +260,8 @@ export default function ChannelPage() {
           messages={messages}
           currentUserId={currentUserId ?? ""}
           onThreadClick={handleThreadClick}
+          onDeleteMessage={handleDeleteMessage}
+          onEditMessage={handleEditMessage}
         />
         <MessageInput onSend={handleSend} placeholder="メッセージを入力..." />
       </div>

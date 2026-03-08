@@ -14,6 +14,7 @@ import {
   unsubscribeFromDm,
   updateDmReadStatus,
 } from "@/lib/dm";
+import { deleteMessage, editMessage } from "@/lib/chat";
 import { showToast } from "@/lib/toast";
 import { createClient } from "@/lib/supabase/client";
 
@@ -121,6 +122,30 @@ export default function DmPage() {
     [conversationId]
   );
 
+  const handleDeleteMessage = useCallback(async (messageId: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    try {
+      await deleteMessage(messageId);
+    } catch (e) {
+      console.error("Failed to delete message:", e);
+      const msgs = await getDmMessages(conversationId);
+      setMessages(msgs);
+    }
+  }, [conversationId]);
+
+  const handleEditMessage = useCallback(async (messageId: string, content: string) => {
+    setMessages((prev) =>
+      prev.map((m) => m.id === messageId ? { ...m, content, is_edited: true } : m)
+    );
+    try {
+      await editMessage(messageId, content);
+    } catch (e) {
+      console.error("Failed to edit message:", e);
+      const msgs = await getDmMessages(conversationId);
+      setMessages(msgs);
+    }
+  }, [conversationId]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full text-muted text-sm">
@@ -156,7 +181,12 @@ export default function DmPage() {
         )}
       </div>
 
-      <MessageList messages={messages} currentUserId={currentUserRef.current ?? ""} />
+      <MessageList
+        messages={messages}
+        currentUserId={currentUserRef.current ?? ""}
+        onDeleteMessage={handleDeleteMessage}
+        onEditMessage={handleEditMessage}
+      />
       <MessageInput
         onSend={handleSend}
         placeholder="メッセージを入力..."

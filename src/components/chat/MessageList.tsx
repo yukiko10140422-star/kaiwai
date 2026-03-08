@@ -7,6 +7,8 @@ interface MessageListProps {
   messages: MessageWithAuthor[];
   currentUserId: string;
   onThreadClick?: (messageId: string) => void;
+  onDeleteMessage?: (messageId: string) => void;
+  onEditMessage?: (messageId: string, content: string) => void;
 }
 
 function isSameMinute(a: string, b: string): boolean {
@@ -28,7 +30,7 @@ function formatDateSeparator(dateStr: string): string {
   });
 }
 
-export default function MessageList({ messages, currentUserId, onThreadClick }: MessageListProps) {
+export default function MessageList({ messages, currentUserId, onThreadClick, onDeleteMessage, onEditMessage }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,6 +77,8 @@ export default function MessageList({ messages, currentUserId, onThreadClick }: 
               currentUserId={currentUserId}
               isGrouped={isGrouped}
               onThreadClick={onThreadClick}
+              onDelete={onDeleteMessage}
+              onEdit={onEditMessage}
             />
           </div>
         );
