@@ -4,6 +4,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import DashboardHeader from "@/components/layout/DashboardHeader";
 import { ToastProvider } from "@/components/notifications";
 import ToastContainer from "@/components/ui/ToastContainer";
+import WhatsNewModal from "@/components/ui/WhatsNewModal";
 
 export default async function DashboardLayout({
   children,
@@ -40,6 +41,7 @@ export default async function DashboardLayout({
         </div>
       </div>
       <ToastContainer />
+      <WhatsNewModal />
     </ToastProvider>
   );
 }
