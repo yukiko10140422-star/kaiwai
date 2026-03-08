@@ -35,16 +35,15 @@ export default function DashboardHeader({ userId }: DashboardHeaderProps) {
 
   return (
     <>
-      <header className="flex items-center justify-end gap-1 h-12 px-3 sm:px-4 border-b border-border bg-sidebar/80 backdrop-blur-md shrink-0">
-        {/* Search button */}
+      <header className="flex items-center gap-2 h-12 px-3 sm:px-4 border-b border-border bg-sidebar shrink-0">
+        {/* Search bar trigger */}
         <button
           onClick={openSearch}
-          className="p-1.5 rounded-lg hover:bg-border/30 text-muted hover:text-foreground transition-colors"
+          className="flex-1 flex items-center gap-2 h-8 px-3 rounded-lg border border-border bg-background/50 text-muted text-sm transition-colors hover:border-accent/50"
           aria-label="検索を開く"
-          title="検索 (/)"
         >
           <svg
-            className="w-5 h-5"
+            className="w-4 h-4 shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -56,6 +55,7 @@ export default function DashboardHeader({ userId }: DashboardHeaderProps) {
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
+          <span className="truncate">検索...</span>
         </button>
 
         <NotificationBell userId={userId} />

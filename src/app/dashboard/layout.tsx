@@ -30,7 +30,7 @@ export default async function DashboardLayout({
 
   return (
     <ToastProvider userId={user.id}>
-      <div className="flex h-dvh overflow-hidden" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <div className="flex h-dvh overflow-hidden safe-top">
         <Sidebar user={userInfo} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <DashboardHeader userId={user.id} />
