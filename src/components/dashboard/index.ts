@@ -3,3 +3,4 @@ export { default as ProgressBar } from "./ProgressBar";
 export { default as StatCard } from "./StatCard";
 export { default as CalendarView } from "./CalendarView";
 export { default as MemberProgress } from "./MemberProgress";
+export { default as ActivityTimeline } from "./ActivityTimeline";

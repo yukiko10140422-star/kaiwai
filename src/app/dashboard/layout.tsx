@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/notifications";
 import ToastContainer from "@/components/ui/ToastContainer";
 import WhatsNewModal from "@/components/ui/WhatsNewModal";
 import InstallGuideModal from "@/components/ui/InstallGuideModal";
+import TaskDueChecker from "@/components/notifications/TaskDueChecker";
 
 export default async function DashboardLayout({
   children,
@@ -44,6 +45,7 @@ export default async function DashboardLayout({
       <ToastContainer />
       <WhatsNewModal />
       <InstallGuideModal />
+      <TaskDueChecker />
     </ToastProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import type { Message, Profile, MessageAttachment } from "@/types/database";
+import type { Message, Profile, MessageAttachment, DmReadStatus } from "@/types/database";
 import type { MessageWithAuthor } from "@/components/chat/MessageItem";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -264,6 +264,20 @@ export async function updateDmReadStatus(conversationId: string): Promise<void> 
       user_id: user.id,
       last_read_at: new Date().toISOString(),
     });
+}
+
+/**
+ * DM既読ステータス一覧を取得
+ */
+export async function getDmReadStatuses(conversationId: string): Promise<DmReadStatus[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("dm_read_status")
+    .select("*")
+    .eq("conversation_id", conversationId);
+
+  if (error) throw error;
+  return data ?? [];
 }
 
 /**

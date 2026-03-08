@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import type { Channel, Message, Profile, MessageAttachment } from "@/types/database";
+import type { Channel, Message, Profile, MessageAttachment, ChannelReadStatus } from "@/types/database";
 import type { MessageWithAuthor } from "@/components/chat/MessageItem";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -303,6 +303,56 @@ export async function updateReadStatus(channelId: string): Promise<void> {
     });
 
   if (error) throw error;
+}
+
+export async function getChannelReadStatuses(channelId: string): Promise<ChannelReadStatus[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("channel_read_status")
+    .select("*")
+    .eq("channel_id", channelId);
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ============================================================
+// Pin / Unpin messages
+// ============================================================
+
+export async function pinMessage(messageId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("messages")
+    .update({ is_pinned: true })
+    .eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function unpinMessage(messageId: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("messages")
+    .update({ is_pinned: false })
+    .eq("id", messageId);
+  if (error) throw error;
+}
+
+export async function getPinnedMessages(channelId: string): Promise<MessageWithAuthor[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*, profiles(*), message_attachments(*)")
+    .eq("channel_id", channelId)
+    .eq("is_pinned", true)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    ...(row as unknown as Message),
+    author: row.profiles as Profile,
+    attachments: (row.message_attachments as MessageAttachment[]) ?? [],
+  }));
 }
 
 // ============================================================

@@ -54,6 +54,7 @@ export interface Message {
   parent_id: string | null;
   content: string;
   is_edited: boolean;
+  is_pinned?: boolean;
   created_at: string;
   updated_at: string;
 }

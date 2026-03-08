@@ -7,6 +7,7 @@ import {
   StatCard,
   CalendarView,
   MemberProgress,
+  ActivityTimeline,
 } from "@/components/dashboard";
 import PageTransition from "@/components/ui/PageTransition";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal";
@@ -204,6 +205,9 @@ export default function ProgressPage() {
           </div>
         </div>
       </div>
+
+      {/* アクティビティログ */}
+      <ActivityTimeline />
 
       <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
     </PageTransition>

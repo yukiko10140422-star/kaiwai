@@ -10,7 +10,7 @@ import dynamic from "next/dynamic";
 const ThreadPanel = dynamic(() => import("@/components/chat/ThreadPanel"), { ssr: false });
 const FileListPanel = dynamic(() => import("@/components/chat/FileListPanel"), { ssr: false });
 import type { MessageWithAuthor } from "@/components/chat/MessageItem";
-import type { Channel, Profile, Message, MessageAttachment } from "@/types/database";
+import type { Channel, Profile, Message, MessageAttachment, ChannelReadStatus } from "@/types/database";
 import {
   getChannel,
   getChannelMembers,
@@ -21,8 +21,12 @@ import {
   subscribeToChannel,
   unsubscribeFromChannel,
   updateReadStatus,
+  getChannelReadStatuses,
+  pinMessage,
+  unpinMessage,
   joinChannel,
 } from "@/lib/chat";
+import PinnedMessages from "@/components/chat/PinnedMessages";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ChannelPage() {
@@ -35,8 +39,11 @@ export default function ChannelPage() {
   const [error, setError] = useState<string | null>(null);
   const [threadMessageId, setThreadMessageId] = useState<string | null>(null);
   const [showFiles, setShowFiles] = useState(false);
+  const [showPins, setShowPins] = useState(false);
+  const [pinRefreshKey, setPinRefreshKey] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
+  const [readStatuses, setReadStatuses] = useState<ChannelReadStatus[]>([]);
 
   // Load channel data
   useEffect(() => {
@@ -69,10 +76,11 @@ export default function ChannelPage() {
           console.warn("joinChannel failed (may already be member):", e)
         );
 
-        const [ch, mem, msgs] = await Promise.all([
+        const [ch, mem, msgs, statuses] = await Promise.all([
           getChannel(channelId),
           getChannelMembers(channelId),
           getMessages(channelId),
+          getChannelReadStatuses(channelId),
         ]);
 
         if (cancelled) return;
@@ -85,6 +93,7 @@ export default function ChannelPage() {
         setChannel(ch);
         setMembers(mem);
         setMessages(msgs);
+        setReadStatuses(statuses);
         setLoaded(true);
         updateReadStatus(channelId);
       } catch (e) {
@@ -100,6 +109,20 @@ export default function ChannelPage() {
     load();
     return () => { cancelled = true; };
   }, [channelId]);
+
+  // Periodically refresh read statuses (every 10s)
+  useEffect(() => {
+    if (!loaded) return;
+    const interval = setInterval(async () => {
+      try {
+        const statuses = await getChannelReadStatuses(channelId);
+        setReadStatuses(statuses);
+      } catch (e) {
+        console.error("Failed to refresh read statuses:", e);
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [channelId, loaded]);
 
   // Realtime subscription
   useEffect(() => {
@@ -153,7 +176,7 @@ export default function ChannelPage() {
         setMessages((prev) =>
           prev.map((m) =>
             m.id === updatedMsg.id
-              ? { ...m, content: updatedMsg.content, is_edited: updatedMsg.is_edited }
+              ? { ...m, content: updatedMsg.content, is_edited: updatedMsg.is_edited, is_pinned: updatedMsg.is_pinned }
               : m
           )
         );
@@ -223,6 +246,42 @@ export default function ChannelPage() {
     }
   }, [channelId]);
 
+  const handlePinMessage = useCallback(async (messageId: string, pinned: boolean) => {
+    // Optimistic update
+    setMessages((prev) =>
+      prev.map((m) => m.id === messageId ? { ...m, is_pinned: pinned } : m)
+    );
+    try {
+      if (pinned) {
+        await pinMessage(messageId);
+      } else {
+        await unpinMessage(messageId);
+      }
+      setPinRefreshKey((k) => k + 1);
+    } catch (e) {
+      console.error("Failed to pin/unpin message:", e);
+      // Revert optimistic update
+      setMessages((prev) =>
+        prev.map((m) => m.id === messageId ? { ...m, is_pinned: !pinned } : m)
+      );
+    }
+  }, []);
+
+  const handleUnpinFromPanel = useCallback(async (messageId: string) => {
+    setMessages((prev) =>
+      prev.map((m) => m.id === messageId ? { ...m, is_pinned: false } : m)
+    );
+    try {
+      await unpinMessage(messageId);
+      setPinRefreshKey((k) => k + 1);
+    } catch (e) {
+      console.error("Failed to unpin message:", e);
+      setMessages((prev) =>
+        prev.map((m) => m.id === messageId ? { ...m, is_pinned: true } : m)
+      );
+    }
+  }, []);
+
   const handleThreadClick = useCallback((messageId: string) => {
     setThreadMessageId(messageId);
   }, []);
@@ -251,17 +310,30 @@ export default function ChannelPage() {
     <div className="flex h-full">
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <ChannelHeader
-          channel={channel}
-          members={members}
-          onFilesClick={() => setShowFiles((prev) => !prev)}
-        />
+        <div className="relative">
+          <ChannelHeader
+            channel={channel}
+            members={members}
+            onFilesClick={() => setShowFiles((prev) => !prev)}
+            onPinsClick={() => setShowPins((prev) => !prev)}
+            showPins={showPins}
+          />
+          <PinnedMessages
+            channelId={channelId}
+            open={showPins}
+            onClose={() => setShowPins(false)}
+            onUnpin={handleUnpinFromPanel}
+            refreshKey={pinRefreshKey}
+          />
+        </div>
         <MessageList
           messages={messages}
           currentUserId={currentUserId ?? ""}
           onThreadClick={handleThreadClick}
           onDeleteMessage={handleDeleteMessage}
           onEditMessage={handleEditMessage}
+          onPinMessage={handlePinMessage}
+          readStatuses={readStatuses}
         />
         <MessageInput onSend={handleSend} placeholder="メッセージを入力..." />
       </div>

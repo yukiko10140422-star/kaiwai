@@ -6,13 +6,14 @@ import { Avatar } from "@/components/ui";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import type { MessageWithAuthor } from "@/components/chat/MessageItem";
-import type { Message, Profile, MessageAttachment } from "@/types/database";
+import type { Message, Profile, MessageAttachment, DmReadStatus } from "@/types/database";
 import {
   getDmMessages,
   sendDmMessage,
   subscribeToDm,
   unsubscribeFromDm,
   updateDmReadStatus,
+  getDmReadStatuses,
 } from "@/lib/dm";
 import { deleteMessage, editMessage } from "@/lib/chat";
 import { showToast } from "@/lib/toast";
@@ -24,6 +25,8 @@ export default function DmPage() {
   const [participant, setParticipant] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [readStatuses, setReadStatuses] = useState<DmReadStatus[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const currentUserRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -54,10 +57,15 @@ export default function DmPage() {
           setParticipant(profile);
         }
 
-        const msgs = await getDmMessages(conversationId);
+        const [msgs, statuses] = await Promise.all([
+          getDmMessages(conversationId),
+          getDmReadStatuses(conversationId),
+        ]);
         if (cancelled) return;
 
         setMessages(msgs);
+        setReadStatuses(statuses);
+        setLoaded(true);
         updateDmReadStatus(conversationId);
       } catch (e) {
         if (!cancelled) {
@@ -72,6 +80,20 @@ export default function DmPage() {
     load();
     return () => { cancelled = true; };
   }, [conversationId]);
+
+  // Periodically refresh read statuses (every 10s)
+  useEffect(() => {
+    if (!loaded) return;
+    const interval = setInterval(async () => {
+      try {
+        const statuses = await getDmReadStatuses(conversationId);
+        setReadStatuses(statuses);
+      } catch (e) {
+        console.error("Failed to refresh DM read statuses:", e);
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [conversationId, loaded]);
 
   // Realtime subscription
   useEffect(() => {
@@ -186,6 +208,7 @@ export default function DmPage() {
         currentUserId={currentUserRef.current ?? ""}
         onDeleteMessage={handleDeleteMessage}
         onEditMessage={handleEditMessage}
+        readStatuses={readStatuses}
       />
       <MessageInput
         onSend={handleSend}

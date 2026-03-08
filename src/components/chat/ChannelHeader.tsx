@@ -8,6 +8,8 @@ interface ChannelHeaderProps {
   members: Profile[];
   onMembersClick?: () => void;
   onFilesClick?: () => void;
+  onPinsClick?: () => void;
+  showPins?: boolean;
 }
 
 export default function ChannelHeader({
@@ -15,6 +17,8 @@ export default function ChannelHeader({
   members,
   onMembersClick,
   onFilesClick,
+  onPinsClick,
+  showPins,
 }: ChannelHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b border-border px-3 sm:px-6 py-3">
@@ -41,6 +45,34 @@ export default function ChannelHeader({
           </div>
           <span className="hidden sm:inline">{members.length}</span>
         </button>
+
+        {/* Pinned messages button */}
+        <div className="relative">
+          <button
+            onClick={onPinsClick}
+            className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${showPins ? "text-accent bg-accent/10" : "text-muted hover:bg-card"}`}
+            aria-label="Pinned messages"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+              />
+            </svg>
+          </button>
+        </div>
 
         {/* Files button */}
         <button

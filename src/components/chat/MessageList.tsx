@@ -2,6 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import MessageItem, { type MessageWithAuthor } from "./MessageItem";
+interface ReadStatusEntry {
+  user_id: string;
+  last_read_at: string;
+}
 
 interface MessageListProps {
   messages: MessageWithAuthor[];
@@ -9,6 +13,8 @@ interface MessageListProps {
   onThreadClick?: (messageId: string) => void;
   onDeleteMessage?: (messageId: string) => void;
   onEditMessage?: (messageId: string, content: string) => void;
+  onPinMessage?: (messageId: string, pinned: boolean) => void;
+  readStatuses?: ReadStatusEntry[];
 }
 
 function isSameMinute(a: string, b: string): boolean {
@@ -30,7 +36,7 @@ function formatDateSeparator(dateStr: string): string {
   });
 }
 
-export default function MessageList({ messages, currentUserId, onThreadClick, onDeleteMessage, onEditMessage }: MessageListProps) {
+export default function MessageList({ messages, currentUserId, onThreadClick, onDeleteMessage, onEditMessage, onPinMessage, readStatuses }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,6 +85,16 @@ export default function MessageList({ messages, currentUserId, onThreadClick, on
               onThreadClick={onThreadClick}
               onDelete={onDeleteMessage}
               onEdit={onEditMessage}
+              onPin={onPinMessage}
+              readCount={
+                msg.user_id === currentUserId && readStatuses
+                  ? readStatuses.filter(
+                      (rs) =>
+                        rs.user_id !== currentUserId &&
+                        rs.last_read_at >= msg.created_at
+                    ).length
+                  : undefined
+              }
             />
           </div>
         );
