@@ -150,7 +150,11 @@ export default function TasksPage() {
       result = result.filter((t) => t.priority === filters.priority);
     }
     if (filters.assignee !== "all") {
-      result = result.filter((t) => t.assignee_id === filters.assignee);
+      result = result.filter(
+        (t) =>
+          t.assignee_id === filters.assignee ||
+          (t.assignees && t.assignees.some((a) => a.id === filters.assignee))
+      );
     }
     if (filters.search) {
       const q = filters.search.toLowerCase();
