@@ -1,11 +1,9 @@
 // KAIWAI Service Worker
-const CACHE_NAME = 'kaiwai-v1';
-const STATIC_CACHE = 'kaiwai-static-v1';
+const CACHE_NAME = 'kaiwai-v2';
+const STATIC_CACHE = 'kaiwai-static-v2';
 
-// App shell files to cache on install
+// App shell files to cache on install (only static assets, no auth-required pages)
 const APP_SHELL = [
-  '/',
-  '/dashboard',
   '/manifest.json',
   '/icons/icon.svg',
 ];
