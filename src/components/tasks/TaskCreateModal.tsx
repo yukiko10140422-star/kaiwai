@@ -23,6 +23,8 @@ export interface TaskCreateFormData {
   channel_id: string | null;
   project_id: string | null;
   due_date: string | null;
+  due_time: string | null;
+  location: string | null;
 }
 
 const statusOptions: { value: TaskStatus; label: string }[] = [
@@ -47,6 +49,8 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
   const [channelId, setChannelId] = useState("");
   const [projectId, setProjectId] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [dueTime, setDueTime] = useState("");
+  const [location, setLocation] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const resetForm = () => {
@@ -58,6 +62,8 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
     setChannelId("");
     setProjectId("");
     setDueDate("");
+    setDueTime("");
+    setLocation("");
   };
 
   const toggleAssignee = (id: string) => {
@@ -81,6 +87,8 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
         channel_id: channelId || null,
         project_id: projectId || null,
         due_date: dueDate || null,
+        due_time: dueTime || null,
+        location: location.trim() || null,
       });
       resetForm();
       onClose();
@@ -234,17 +242,47 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
           </div>
         </div>
 
-        {/* Due date */}
+        {/* Due date & Time */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="task-due" className="block text-xs text-muted mb-1">
+              期限
+            </label>
+            <input
+              id="task-due"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="task-time" className="block text-xs text-muted mb-1">
+              時間
+            </label>
+            <input
+              id="task-time"
+              type="time"
+              value={dueTime}
+              onChange={(e) => setDueTime(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
+            />
+          </div>
+        </div>
+
+        {/* Location */}
         <div>
-          <label htmlFor="task-due" className="block text-xs text-muted mb-1">
-            期限
+          <label htmlFor="task-location" className="block text-xs text-muted mb-1">
+            場所
           </label>
           <input
-            id="task-due"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            id="task-location"
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
+            placeholder="例: 会議室A、Zoom"
           />
         </div>
 

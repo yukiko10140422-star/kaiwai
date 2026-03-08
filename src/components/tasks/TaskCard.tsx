@@ -98,10 +98,11 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
             <PriorityIcon priority={task.priority} />
           </span>
 
-          {/* Due date */}
+          {/* Due date & time */}
           {task.due_date && (
             <Badge variant={isOverdue ? "overdue" : "default"}>
               {formatDate(task.due_date)}
+              {task.due_time ? ` ${task.due_time.slice(0, 5)}` : ""}
             </Badge>
           )}
         </div>

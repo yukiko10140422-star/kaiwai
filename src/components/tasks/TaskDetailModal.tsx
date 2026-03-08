@@ -78,13 +78,16 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
               </span>
             </div>
 
-            {/* Due date */}
+            {/* Due date & time */}
             <div>
               <label className="text-xs text-muted block mb-1">期限</label>
               {task.due_date ? (
                 <Badge variant={isOverdue ? "overdue" : "default"}>
                   {new Date(task.due_date).toLocaleDateString("ja-JP")}
+                  {task.due_time ? ` ${task.due_time.slice(0, 5)}` : ""}
                 </Badge>
+              ) : task.due_time ? (
+                <span className="text-sm">{task.due_time.slice(0, 5)}</span>
               ) : (
                 <span className="text-sm text-muted">未設定</span>
               )}
@@ -107,6 +110,20 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
               )}
             </div>
           </div>
+
+          {/* Location */}
+          {task.location && (
+            <div className="mb-4">
+              <label className="text-xs text-muted block mb-1">場所</label>
+              <div className="flex items-center gap-1.5 text-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted shrink-0">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span>{task.location}</span>
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           {task.description && (

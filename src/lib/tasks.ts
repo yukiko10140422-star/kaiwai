@@ -25,6 +25,10 @@ export interface CreateTaskInput {
   project_id?: string | null;
   channel_id?: string | null;
   due_date?: string | null;
+  /** Optional time (HH:MM). Requires: ALTER TABLE tasks ADD COLUMN due_time TIME; */
+  due_time?: string | null;
+  /** Optional location. Requires: ALTER TABLE tasks ADD COLUMN location TEXT; */
+  location?: string | null;
   position?: number;
 }
 
@@ -35,6 +39,10 @@ export interface UpdateTaskInput {
   priority?: TaskPriority;
   assignee_id?: string | null;
   due_date?: string | null;
+  /** Optional time (HH:MM). Requires: ALTER TABLE tasks ADD COLUMN due_time TIME; */
+  due_time?: string | null;
+  /** Optional location. Requires: ALTER TABLE tasks ADD COLUMN location TEXT; */
+  location?: string | null;
   position?: number;
 }
 

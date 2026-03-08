@@ -198,6 +198,8 @@ CREATE TABLE tasks (
   assignee_id UUID REFERENCES profiles(id) ON DELETE SET NULL, -- レガシー（単一アサイン）
   created_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   due_date DATE,
+  due_time TIME,                        -- タスクの時間指定（任意）
+  location TEXT,                        -- 場所（任意）
   position INTEGER NOT NULL DEFAULT 0, -- カンバン内の並び順
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()

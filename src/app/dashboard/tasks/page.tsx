@@ -110,6 +110,8 @@ export default function TasksPage() {
       channel_id: formData.channel_id,
       project_id: formData.project_id,
       due_date: formData.due_date,
+      due_time: formData.due_time,
+      location: formData.location,
     });
     const data = await fetchTasks();
     setTasks(data);

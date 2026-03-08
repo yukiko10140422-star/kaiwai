@@ -95,6 +95,13 @@ export interface Task {
   assignee_id: string | null;
   created_by: string;
   due_date: string | null;
+  /** Optional time for the task (HH:MM format). DB column: due_time TIME */
+  // NOTE: Requires DB migration:
+  //   ALTER TABLE tasks ADD COLUMN due_time TIME;
+  //   ALTER TABLE tasks ADD COLUMN location TEXT;
+  due_time?: string | null;
+  /** Optional location/place for the task */
+  location?: string | null;
   position: number;
   created_at: string;
   updated_at: string;
