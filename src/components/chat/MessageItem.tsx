@@ -9,6 +9,7 @@ import { toggleReaction, groupReactions } from "@/lib/reactions";
 import ReactionBar from "./ReactionBar";
 import ReactionPicker from "./ReactionPicker";
 import FilePreviewModal from "./FilePreviewModal";
+import UrlPreview from "./UrlPreview";
 
 export interface MessageWithAuthor extends Message {
   author: Profile;
@@ -407,6 +408,9 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
             )
           )}
         </div>
+
+        {/* URL Previews */}
+        <UrlPreview content={message.content} />
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
