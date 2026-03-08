@@ -235,6 +235,29 @@ export interface DmReadStatus {
 }
 
 // ------------------------------------------------------------
+// Feature Requests (機能リクエスト)
+// ------------------------------------------------------------
+
+export type FeatureRequestStatus = "open" | "planned" | "done" | "rejected";
+
+export interface FeatureRequest {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  votes: number;
+  status: FeatureRequestStatus;
+  created_at: string;
+}
+
+export interface FeatureRequestVote {
+  id: string;
+  request_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+// ------------------------------------------------------------
 // Supabase Database 型 (supabase gen types 互換構造)
 // ------------------------------------------------------------
 
@@ -349,6 +372,16 @@ export interface Database {
       activity_logs: {
         Row: ActivityLog;
         Insert: Omit<ActivityLog, 'id' | 'created_at'>;
+        Update: never;
+      };
+      feature_requests: {
+        Row: FeatureRequest;
+        Insert: Omit<FeatureRequest, 'id' | 'created_at'>;
+        Update: Partial<Omit<FeatureRequest, 'id' | 'created_at'>>;
+      };
+      feature_request_votes: {
+        Row: FeatureRequestVote;
+        Insert: Omit<FeatureRequestVote, 'id' | 'created_at'>;
         Update: never;
       };
     };
