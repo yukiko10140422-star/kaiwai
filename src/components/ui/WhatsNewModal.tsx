@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.7.0";
+const CURRENT_VERSION = "1.9.0";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,30 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.9.0",
+    date: "2026-03-08",
+    title: "プロジェクト統合・成果物提出",
+    items: [
+      { type: "new", text: "プロジェクトとチャンネルが統合されました。プロジェクトを作ると専用チャットが自動で作られます" },
+      { type: "new", text: "プロジェクトメンバーに役職（リーダー、エンジニア等）を設定できるようになりました" },
+      { type: "new", text: "複数プロジェクト・複数役職の兼任に対応しました" },
+      { type: "new", text: "チャットでメンバーの役職バッジが表示されるようになりました" },
+      { type: "new", text: "タスクに成果物を提出してチームで閲覧・レビューできるようになりました" },
+    ],
+  },
+  {
+    version: "1.8.0",
+    date: "2026-03-08",
+    title: "ガントチャート・カレンダー連携・多言語対応",
+    items: [
+      { type: "new", text: "タスクをガントチャートで一覧表示できるようになりました" },
+      { type: "new", text: "タスクをGoogleカレンダーに追加したり、.icsファイルとしてエクスポートできます" },
+      { type: "new", text: "オフライン時でもアプリが表示されるようになりました" },
+      { type: "new", text: "日本語・英語の切り替えに対応しました（設定画面から変更可能）" },
+      { type: "new", text: "ほしい機能をリクエスト・投票できるページを追加しました" },
+    ],
+  },
   {
     version: "1.7.0",
     date: "2026-03-08",
@@ -83,10 +107,10 @@ export default function WhatsNewModal() {
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  // 毎回ログイン時に表示。セッション中に閉じたら再表示しない
+  // アップデートがあったときのみ表示（バージョンが変わったら表示）
   useEffect(() => {
     try {
-      const dismissed = sessionStorage.getItem(STORAGE_KEY);
+      const dismissed = localStorage.getItem(STORAGE_KEY);
       if (dismissed !== CURRENT_VERSION) {
         setOpen(true);
       }
@@ -98,7 +122,7 @@ export default function WhatsNewModal() {
   const handleClose = () => {
     setOpen(false);
     try {
-      sessionStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
+      localStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
     } catch {
       // ignore
     }

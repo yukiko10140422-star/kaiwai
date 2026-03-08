@@ -57,6 +57,15 @@ Every session must follow this flow:
 - `docs/PROGRESS.md` - Progress log (session history, errors, next steps)
 - `docs/PARALLEL_TASKS.md` - Parallelizable tasks for sub-agents
 
+## Release Workflow (IMPORTANT)
+
+機能追加・変更を行った際は必ず以下を実施すること:
+1. **WhatsNewModal 更新**: `src/components/ui/WhatsNewModal.tsx` の `CURRENT_VERSION` をインクリメントし、changelog に新しいエントリを追加する
+2. **docs/PROGRESS.md 更新**: セッションログに変更内容を追記する
+3. **ビルド確認**: `npx next build` でエラーがないことを確認する
+
+WhatsNewModal は `localStorage` ベースで、バージョンが変わったときのみユーザーに表示される。
+
 ## Development Phases
 
 1. Foundation (Auth, profiles, project setup)

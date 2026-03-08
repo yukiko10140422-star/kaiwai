@@ -15,6 +15,7 @@ interface MessageListProps {
   onEditMessage?: (messageId: string, content: string) => void;
   onPinMessage?: (messageId: string, pinned: boolean) => void;
   readStatuses?: ReadStatusEntry[];
+  userRoles?: Record<string, string[]>;
 }
 
 function isSameMinute(a: string, b: string): boolean {
@@ -36,7 +37,7 @@ function formatDateSeparator(dateStr: string): string {
   });
 }
 
-export default function MessageList({ messages, currentUserId, onThreadClick, onDeleteMessage, onEditMessage, onPinMessage, readStatuses }: MessageListProps) {
+export default function MessageList({ messages, currentUserId, onThreadClick, onDeleteMessage, onEditMessage, onPinMessage, readStatuses, userRoles }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,6 +87,7 @@ export default function MessageList({ messages, currentUserId, onThreadClick, on
               onDelete={onDeleteMessage}
               onEdit={onEditMessage}
               onPin={onPinMessage}
+              roles={userRoles?.[msg.user_id]}
               readCount={
                 msg.user_id === currentUserId && readStatuses
                   ? readStatuses.filter(

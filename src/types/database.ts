@@ -25,6 +25,7 @@ export interface Channel {
   description: string | null;
   type: ChannelType;
   created_by: string;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +83,7 @@ export interface Project {
   name: string;
   description: string | null;
   created_by: string;
+  channel_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -142,6 +144,43 @@ export interface TaskComment {
   content: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  roles: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+// ------------------------------------------------------------
+// Task Submissions (成果物提出)
+// ------------------------------------------------------------
+
+export type SubmissionStatus = "pending" | "approved" | "rejected";
+
+export interface TaskSubmission {
+  id: string;
+  task_id: string;
+  submitted_by: string;
+  comment: string | null;
+  status: SubmissionStatus;
+  reviewer_id: string | null;
+  reviewer_notes: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface SubmissionFile {
+  id: string;
+  submission_id: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  storage_path: string;
+  created_at: string;
 }
 
 export interface Notification {
@@ -373,6 +412,11 @@ export interface Database {
         Row: ActivityLog;
         Insert: Omit<ActivityLog, 'id' | 'created_at'>;
         Update: never;
+      };
+      project_members: {
+        Row: ProjectMember;
+        Insert: Omit<ProjectMember, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<ProjectMember, 'id' | 'created_at'>>;
       };
       feature_requests: {
         Row: FeatureRequest;

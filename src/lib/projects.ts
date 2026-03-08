@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
-import type { Project, Profile } from "@/types/database";
+import type { Project, Profile, ProjectMember } from "@/types/database";
+import { createChannel } from "@/lib/chat";
 
 // ============================================================
 // Types
@@ -135,23 +136,38 @@ export async function fetchProject(projectId: string): Promise<ProjectWithStats 
   };
 }
 
-/** Create a new project */
+/** Create a new project (auto-creates a linked channel) */
 export async function createProject(name: string, description?: string): Promise<Project> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
+  // 1. Create linked channel
+  const channel = await createChannel(name, description ?? "", "private");
+
+  // 2. Create project with channel_id
   const { data, error } = await supabase
     .from("projects")
     .insert({
       name,
       description: description ?? null,
       created_by: user.id,
+      channel_id: channel.id,
     })
     .select()
     .single();
 
   if (error) throw error;
+
+  // 3. Link channel back to project
+  await supabase
+    .from("channels")
+    .update({ project_id: data.id })
+    .eq("id", channel.id);
+
+  // 4. Add creator as project member (leader)
+  await addProjectMember(data.id, user.id, ["リーダー"]);
+
   return data;
 }
 
@@ -173,10 +189,93 @@ export async function updateProject(
   return updated;
 }
 
-/** Delete a project (cascade deletes tasks) */
+/** Delete a project (cascade deletes tasks, also deletes linked channel) */
 export async function deleteProject(id: string): Promise<void> {
   const supabase = createClient();
+
+  // Fetch channel_id before deleting
+  const { data: project } = await supabase
+    .from("projects")
+    .select("channel_id")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase.from("projects").delete().eq("id", id);
+  if (error) throw error;
+
+  // Delete linked channel
+  if (project?.channel_id) {
+    await supabase.from("channels").delete().eq("id", project.channel_id);
+  }
+}
+
+// ============================================================
+// Project Members
+// ============================================================
+
+export interface ProjectMemberWithProfile extends ProjectMember {
+  profile: Pick<Profile, "id" | "display_name" | "avatar_url">;
+}
+
+/** Fetch all members of a project with their profiles */
+export async function fetchProjectMembers(projectId: string): Promise<ProjectMemberWithProfile[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("project_members")
+    .select("*, profile:profiles!project_members_user_id_fkey(id, display_name, avatar_url)")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map((row) => ({
+    ...row,
+    profile: row.profile as Pick<Profile, "id" | "display_name" | "avatar_url">,
+  }));
+}
+
+/** Add a member to a project */
+export async function addProjectMember(
+  projectId: string,
+  userId: string,
+  roles: string[] = []
+): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase.from("project_members").insert({
+    project_id: projectId,
+    user_id: userId,
+    roles,
+  });
+
+  if (error) throw error;
+}
+
+/** Update a member's roles */
+export async function updateProjectMemberRoles(
+  memberId: string,
+  roles: string[]
+): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("project_members")
+    .update({ roles, updated_at: new Date().toISOString() })
+    .eq("id", memberId);
+
+  if (error) throw error;
+}
+
+/** Remove a member from a project */
+export async function removeProjectMember(memberId: string): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("project_members")
+    .delete()
+    .eq("id", memberId);
+
   if (error) throw error;
 }
 

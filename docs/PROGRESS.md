@@ -408,6 +408,76 @@ Phase 5: ポリッシュ（継続中）
 - `src/app/dashboard/progress/page.tsx` - アクティビティ統合
 - `src/types/database.ts` - is_pinned追加
 
+---
+
+### セッション: バッチ3-4完了 + 仕上げ (2026-03-08)
+
+**バッチ3完了:**
+- Task AC: ブラウザ通知（Web Notifications API）
+- Task AE: ウィークリーレポート（週次集計）
+
+**バッチ4完了:**
+- Task AF: ガントチャート（純CSS/HTML、21日ビュー）
+- Task AG: Googleカレンダー連携 + .icsエクスポート
+- Task AH: オフライン対応（Service Worker v3）
+- Task AI: 多言語対応（日本語/英語切り替え）
+
+**追加実装:**
+- 機能リクエストページ（提案・投票）
+- PWAインストールガイドモーダル（初回ログイン時）
+- WhatsNewModal: sessionStorage → localStorage（バージョン更新時のみ表示）
+
+**DBマイグレーション実行済み:**
+- `ALTER TABLE messages ADD COLUMN is_pinned BOOLEAN DEFAULT false`
+- `feature_requests` テーブル + RLS
+- `feature_request_votes` テーブル + RLS
+
+---
+
+### セッション: プロジェクト統合・成果物提出 (2026-03-08)
+
+**プロジェクト × チャンネル統合:**
+- DB: `projects.channel_id` + `channels.project_id` の双方向リンク追加
+- DB: `project_members` → `channel_members` の自動同期トリガー作成
+- プロジェクト作成時にチャンネル自動作成、メンバー自動同期
+- サイドバー: プロジェクトチャンネルはフォルダアイコンで区別、プロジェクト詳細へのリンク
+- チャットヘッダー: プロジェクト詳細へのリンクボタン
+- プロジェクト詳細: チャットへのリンクボタン
+- 既存プロジェクト（DX, アパレル）のマイグレーション + 重複チャンネル統合
+
+**プロジェクトメンバー・役職管理:**
+- DB: `project_members` テーブル（`roles TEXT[]` で複数役職対応）
+- プリセット役職: リーダー/エンジニア/デザイナー/ディレクター/PM/マーケター/QA
+- カスタム役職の自由入力対応
+- 複数プロジェクト兼任 + 複数役職兼任対応
+- Avatar: 役職バッジ + リングカラー（リーダー=金、エンジニア=青等）
+- チャットメッセージに役職バッジ表示
+
+**成果物提出機能:**
+- DB: `task_submissions` + `submission_files` テーブル
+- ファイルアップロード（複数対応）+ コメント付き提出
+- レビュー機能（承認/差し戻し + レビューコメント）
+- TaskDetailModal に提出セクション追加
+
+**ルール追加:**
+- CLAUDE.md に Release Workflow ルール追記（WhatsNewModal + docs更新の義務化）
+
+**変更ファイル:**
+- `src/types/database.ts` - Channel/Project型にFK追加、ProjectMember/TaskSubmission/SubmissionFile型追加
+- `src/lib/projects.ts` - createProject（チャンネル自動作成）、deleteProject（チャンネル削除）、メンバーCRUD
+- `src/lib/submissions.ts` - 新規（成果物CRUD + ファイルアップロード + レビュー）
+- `src/components/projects/ProjectMembersSection.tsx` - 新規（メンバー管理UI）
+- `src/components/ui/Avatar.tsx` - 役職バッジ + リングカラー対応
+- `src/components/layout/ChannelList.tsx` - プロジェクト/チャンネル分離表示
+- `src/components/chat/ChannelHeader.tsx` - プロジェクトリンク追加
+- `src/components/chat/MessageItem.tsx` - 役職バッジ表示
+- `src/components/chat/MessageList.tsx` - userRoles props追加
+- `src/app/dashboard/chat/[channelId]/page.tsx` - プロジェクトメンバーロール取得
+- `src/app/dashboard/projects/[projectId]/page.tsx` - メンバーセクション + チャットリンク追加
+- `src/components/tasks/TaskDetailModal.tsx` - 成果物提出セクション追加
+- `src/components/ui/WhatsNewModal.tsx` - v1.9.0 changelog
+- `CLAUDE.md` - Release Workflow ルール追加
+
 **次回やること:**
-- DB: `ALTER TABLE messages ADD COLUMN is_pinned BOOLEAN DEFAULT false;`
-- バッチ3の実装
+- ユーザーテスト・フィードバック反映
+- パフォーマンス最適化

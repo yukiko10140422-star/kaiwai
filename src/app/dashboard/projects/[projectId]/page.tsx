@@ -12,12 +12,16 @@ import {
   createKpiGoal,
   updateKpiGoal,
   deleteKpiGoal,
+  fetchProjectMembers,
   type ProjectWithStats,
+  type ProjectMemberWithProfile,
   type KpiGoal,
   type KpiTimeframe,
 } from "@/lib/projects";
-import { fetchTasks } from "@/lib/tasks";
+import { fetchTasks, fetchMembers } from "@/lib/tasks";
 import type { TaskCardData } from "@/components/tasks/TaskCard";
+import type { Profile } from "@/types/database";
+import ProjectMembersSection from "@/components/projects/ProjectMembersSection";
 
 const timeframeConfig: Record<KpiTimeframe, { label: string; color: string; bgColor: string }> = {
   short: { label: "短期目標", color: "text-status-progress", bgColor: "bg-status-progress" },
@@ -45,6 +49,8 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<ProjectWithStats | null>(null);
   const [tasks, setTasks] = useState<TaskCardData[]>([]);
   const [kpiGoals, setKpiGoals] = useState<KpiGoal[]>([]);
+  const [projectMembers, setProjectMembers] = useState<ProjectMemberWithProfile[]>([]);
+  const [allUsers, setAllUsers] = useState<Pick<Profile, "id" | "display_name" | "avatar_url">[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,10 +76,12 @@ export default function ProjectDetailPage() {
 
   const loadData = useCallback(async () => {
     try {
-      const [p, t, k] = await Promise.all([
+      const [p, t, k, pm, users] = await Promise.all([
         fetchProject(projectId),
         fetchTasks(projectId),
         fetchKpiGoals(projectId).catch(() => [] as KpiGoal[]),
+        fetchProjectMembers(projectId).catch(() => [] as ProjectMemberWithProfile[]),
+        fetchMembers(),
       ]);
       if (!p) {
         setError("プロジェクトが見つかりません");
@@ -82,6 +90,8 @@ export default function ProjectDetailPage() {
       setProject(p);
       setTasks(t);
       setKpiGoals(k);
+      setProjectMembers(pm);
+      setAllUsers(users);
       setNameValue(p.name);
       setDescValue(p.description ?? "");
     } catch (err) {
@@ -94,6 +104,15 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const reloadMembers = useCallback(async () => {
+    try {
+      const pm = await fetchProjectMembers(projectId);
+      setProjectMembers(pm);
+    } catch (e) {
+      console.error("Failed to reload members:", e);
+    }
+  }, [projectId]);
 
   const handleSaveName = async () => {
     if (!nameValue.trim() || !project) return;
@@ -226,12 +245,26 @@ export default function ProjectDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <Link
-            href="/dashboard/projects"
-            className="text-xs text-muted hover:text-foreground transition-colors mb-2 inline-block"
-          >
-            ← プロジェクト一覧
-          </Link>
+          <div className="flex items-center gap-3 mb-2">
+            <Link
+              href="/dashboard/projects"
+              className="text-xs text-muted hover:text-foreground transition-colors"
+            >
+              ← プロジェクト一覧
+            </Link>
+            {project.channel_id && (
+              <Link href={`/dashboard/chat/${project.channel_id}`}>
+                <Button variant="secondary" size="sm">
+                  <span className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                    </svg>
+                    チャット
+                  </span>
+                </Button>
+              </Link>
+            )}
+          </div>
           {editingName ? (
             <div className="flex items-center gap-2">
               <input
@@ -274,7 +307,11 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="glass rounded-2xl p-4 text-center">
+          <p className="text-2xl font-bold">{projectMembers.length}</p>
+          <p className="text-xs text-muted">メンバー</p>
+        </div>
         <div className="glass rounded-2xl p-4 text-center">
           <p className="text-2xl font-bold">{project.task_count}</p>
           <p className="text-xs text-muted">全タスク</p>
@@ -373,6 +410,14 @@ export default function ProjectDetailPage() {
           })}
         </div>
       </div>
+
+      {/* Members */}
+      <ProjectMembersSection
+        projectId={projectId}
+        members={projectMembers}
+        allUsers={allUsers}
+        onUpdate={reloadMembers}
+      />
 
       {/* Tasks */}
       <div>

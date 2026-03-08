@@ -26,6 +26,7 @@ import {
   unpinMessage,
   joinChannel,
 } from "@/lib/chat";
+import { fetchProjectMembers, type ProjectMemberWithProfile } from "@/lib/projects";
 import PinnedMessages from "@/components/chat/PinnedMessages";
 import { createClient } from "@/lib/supabase/client";
 
@@ -44,6 +45,7 @@ export default function ChannelPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null);
   const [readStatuses, setReadStatuses] = useState<ChannelReadStatus[]>([]);
+  const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
 
   // Load channel data
   useEffect(() => {
@@ -94,6 +96,21 @@ export default function ChannelPage() {
         setMembers(mem);
         setMessages(msgs);
         setReadStatuses(statuses);
+
+        // Fetch project member roles for role badges in chat
+        if (ch.project_id) {
+          try {
+            const pm = await fetchProjectMembers(ch.project_id);
+            const roleMap: Record<string, string[]> = {};
+            for (const m of pm) {
+              roleMap[m.user_id] = m.roles;
+            }
+            setUserRoles(roleMap);
+          } catch {
+            // Non-critical, ignore
+          }
+        }
+
         setLoaded(true);
         updateReadStatus(channelId);
       } catch (e) {
@@ -317,6 +334,7 @@ export default function ChannelPage() {
             onFilesClick={() => setShowFiles((prev) => !prev)}
             onPinsClick={() => setShowPins((prev) => !prev)}
             showPins={showPins}
+            projectId={channel.project_id}
           />
           <PinnedMessages
             channelId={channelId}
@@ -334,6 +352,7 @@ export default function ChannelPage() {
           onEditMessage={handleEditMessage}
           onPinMessage={handlePinMessage}
           readStatuses={readStatuses}
+          userRoles={userRoles}
         />
         <MessageInput onSend={handleSend} placeholder="メッセージを入力..." />
       </div>

@@ -27,6 +27,22 @@ interface MessageItemProps {
   onPin?: (messageId: string, pinned: boolean) => void;
   memberNames?: string[];
   readCount?: number;
+  roles?: string[];
+}
+
+const roleBadgeColors: Record<string, string> = {
+  "リーダー": "bg-amber-500/20 text-amber-400",
+  "PM": "bg-amber-500/20 text-amber-400",
+  "マネージャー": "bg-amber-500/20 text-amber-400",
+  "エンジニア": "bg-blue-500/20 text-blue-400",
+  "デザイナー": "bg-purple-500/20 text-purple-400",
+  "ディレクター": "bg-rose-500/20 text-rose-400",
+  "マーケター": "bg-emerald-500/20 text-emerald-400",
+  "QA": "bg-orange-500/20 text-orange-400",
+};
+
+function getRoleBadgeColor(role: string): string {
+  return roleBadgeColors[role] || "bg-slate-500/20 text-slate-400";
 }
 
 function formatTime(dateStr: string): string {
@@ -308,7 +324,7 @@ function ImageLightbox({
   );
 }
 
-export default function MessageItem({ message, currentUserId, isGrouped = false, onThreadClick, onDelete, onEdit, onPin, memberNames = [], readCount }: MessageItemProps) {
+export default function MessageItem({ message, currentUserId, isGrouped = false, onThreadClick, onDelete, onEdit, onPin, memberNames = [], readCount, roles }: MessageItemProps) {
   const [reactions, setReactions] = useState<MessageReaction[]>(message.reactions ?? []);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [contextMenu, setContextMenu] = useState(false);
@@ -413,7 +429,14 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
         {!isGrouped && (
           <div className={`flex items-baseline gap-2 mb-0.5 ${isOwn ? "flex-row-reverse" : ""}`}>
             {!isOwn && (
-              <span className="font-semibold text-xs">{message.author.display_name}</span>
+              <span className="font-semibold text-xs flex items-center gap-1">
+                {message.author.display_name}
+                {roles && roles.length > 0 && (
+                  <span className={`inline-block px-1 py-px rounded text-[9px] font-bold leading-tight ${getRoleBadgeColor(roles[0])}`}>
+                    {roles[0]}
+                  </span>
+                )}
+              </span>
             )}
             <span className="text-[10px] text-muted">{formatTime(message.created_at)}</span>
             {message.is_edited && (

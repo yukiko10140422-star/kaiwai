@@ -8,6 +8,14 @@ import type { TaskStatus, TaskPriority, TaskComment, Profile } from "@/types/dat
 import type { UpdateTaskInput } from "@/lib/tasks";
 import { setTaskAssignees, fetchTaskComments, createTaskComment } from "@/lib/tasks";
 import { generateGoogleCalendarUrl, generateIcsContent, downloadIcs } from "@/lib/calendar-export";
+import {
+  fetchTaskSubmissions,
+  createSubmission,
+  reviewSubmission,
+  deleteSubmission,
+  getSubmissionFileUrl,
+  type SubmissionWithAuthor,
+} from "@/lib/submissions";
 
 type CommentWithAuthor = TaskComment & { author: Pick<Profile, "display_name" | "avatar_url"> };
 
@@ -59,6 +67,15 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
   const [commentText, setCommentText] = useState("");
   const [loadingComments, setLoadingComments] = useState(false);
 
+  // Submissions
+  const [submissions, setSubmissions] = useState<SubmissionWithAuthor[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
+  const [submitFiles, setSubmitFiles] = useState<File[]>([]);
+  const [submitComment, setSubmitComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
+
   // Sync form state when task changes
   useEffect(() => {
     if (task) {
@@ -103,6 +120,76 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
       await loadComments(task.id);
     } catch (e) {
       console.error("Failed to add comment:", e);
+    }
+  };
+
+  // Submissions
+  const loadSubmissions = useCallback(async (taskId: string) => {
+    setLoadingSubmissions(true);
+    try {
+      const data = await fetchTaskSubmissions(taskId);
+      setSubmissions(data);
+    } catch (e) {
+      console.error("Failed to fetch submissions:", e);
+    } finally {
+      setLoadingSubmissions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (task?.id) {
+      loadSubmissions(task.id);
+      setSubmitFiles([]);
+      setSubmitComment("");
+      setReviewingId(null);
+    } else {
+      setSubmissions([]);
+    }
+  }, [task?.id, loadSubmissions]);
+
+  const handleSubmit = async () => {
+    if (!task || submitFiles.length === 0) return;
+    setSubmitting(true);
+    try {
+      await createSubmission(task.id, submitFiles, submitComment);
+      setSubmitFiles([]);
+      setSubmitComment("");
+      await loadSubmissions(task.id);
+    } catch (e) {
+      console.error("Failed to submit:", e);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleReview = async (submissionId: string, status: "approved" | "rejected") => {
+    try {
+      await reviewSubmission(submissionId, status, reviewNotes);
+      setReviewingId(null);
+      setReviewNotes("");
+      if (task) await loadSubmissions(task.id);
+    } catch (e) {
+      console.error("Failed to review:", e);
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    try {
+      await deleteSubmission(submissionId);
+      if (task) await loadSubmissions(task.id);
+    } catch (e) {
+      console.error("Failed to delete submission:", e);
+    }
+  };
+
+  const handleFileDownload = async (storagePath: string, fileName: string) => {
+    const url = await getSubmissionFileUrl(storagePath);
+    if (url) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.target = "_blank";
+      a.click();
     }
   };
 
@@ -505,6 +592,202 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
                   >
                     送信
                   </button>
+                </div>
+              </div>
+
+              {/* Submissions Section (成果物提出) */}
+              <div className="pt-3 border-t border-border mt-4">
+                <h4 className="text-xs text-muted mb-3">
+                  成果物 ({submissions.length})
+                  {submissions.some((s) => s.status === "pending") && (
+                    <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
+                      {submissions.filter((s) => s.status === "pending").length} 件未レビュー
+                    </span>
+                  )}
+                </h4>
+
+                {/* Submission list */}
+                <div className="space-y-3 mb-3">
+                  {loadingSubmissions ? (
+                    <p className="text-xs text-muted">読み込み中...</p>
+                  ) : submissions.length === 0 ? (
+                    <p className="text-xs text-muted">提出はまだありません</p>
+                  ) : (
+                    submissions.map((s) => (
+                      <div key={s.id} className={`rounded-lg border p-3 ${
+                        s.status === "approved" ? "border-green-500/30 bg-green-500/5" :
+                        s.status === "rejected" ? "border-red-500/30 bg-red-500/5" :
+                        "border-border bg-card/30"
+                      }`}>
+                        {/* Header */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <Avatar src={s.author.avatar_url} name={s.author.display_name} size="xs" />
+                          <span className="text-xs font-medium">{s.author.display_name}</span>
+                          <span className="text-[10px] text-muted">{relativeTime(s.created_at)}</span>
+                          <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            s.status === "approved" ? "bg-green-500/20 text-green-400" :
+                            s.status === "rejected" ? "bg-red-500/20 text-red-400" :
+                            "bg-amber-500/20 text-amber-400"
+                          }`}>
+                            {s.status === "approved" ? "承認済み" : s.status === "rejected" ? "差し戻し" : "レビュー待ち"}
+                          </span>
+                        </div>
+
+                        {/* Comment */}
+                        {s.comment && (
+                          <p className="text-sm mb-2">{s.comment}</p>
+                        )}
+
+                        {/* Files */}
+                        {s.files.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {s.files.map((f) => (
+                              <button
+                                key={f.id}
+                                onClick={() => handleFileDownload(f.storage_path, f.file_name)}
+                                className="flex items-center gap-1.5 px-2 py-1 rounded border border-border hover:border-accent/50 text-xs transition-colors"
+                              >
+                                <svg className="w-3.5 h-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                                </svg>
+                                <span className="truncate max-w-[120px]">{f.file_name}</span>
+                                <span className="text-muted text-[10px]">
+                                  {f.file_size < 1024 * 1024
+                                    ? `${(f.file_size / 1024).toFixed(0)}KB`
+                                    : `${(f.file_size / (1024 * 1024)).toFixed(1)}MB`}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Reviewer notes */}
+                        {s.reviewer_notes && (
+                          <div className="text-xs mt-2 p-2 rounded bg-background/50 border border-border/50">
+                            <span className="font-medium">レビュー: </span>
+                            {s.reviewer_notes}
+                            {s.reviewer && (
+                              <span className="text-muted ml-1">— {s.reviewer.display_name}</span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Review actions */}
+                        {s.status === "pending" && (
+                          <div className="mt-2">
+                            {reviewingId === s.id ? (
+                              <div className="space-y-2">
+                                <textarea
+                                  value={reviewNotes}
+                                  onChange={(e) => setReviewNotes(e.target.value)}
+                                  placeholder="レビューコメント（任意）..."
+                                  rows={2}
+                                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleReview(s.id, "approved")}
+                                    className="px-3 py-1 rounded-lg bg-green-500/20 text-green-400 text-xs font-medium hover:bg-green-500/30 transition-colors"
+                                  >
+                                    承認
+                                  </button>
+                                  <button
+                                    onClick={() => handleReview(s.id, "rejected")}
+                                    className="px-3 py-1 rounded-lg bg-red-500/20 text-red-400 text-xs font-medium hover:bg-red-500/30 transition-colors"
+                                  >
+                                    差し戻し
+                                  </button>
+                                  <button
+                                    onClick={() => { setReviewingId(null); setReviewNotes(""); }}
+                                    className="px-3 py-1 rounded-lg text-muted text-xs hover:text-foreground transition-colors"
+                                  >
+                                    キャンセル
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setReviewingId(s.id)}
+                                  className="px-2 py-1 rounded text-xs text-accent hover:underline"
+                                >
+                                  レビューする
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSubmission(s.id)}
+                                  className="px-2 py-1 rounded text-xs text-muted hover:text-status-overdue"
+                                >
+                                  削除
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Submit new deliverable */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-border hover:border-accent/50 text-xs text-muted hover:text-foreground cursor-pointer transition-colors">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                      </svg>
+                      ファイルを選択
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setSubmitFiles(Array.from(e.target.files));
+                          }
+                        }}
+                      />
+                    </label>
+                    {submitFiles.length > 0 && (
+                      <span className="text-xs text-muted">
+                        {submitFiles.length} ファイル選択中
+                      </span>
+                    )}
+                  </div>
+
+                  {submitFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {submitFiles.map((f, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-card border border-border text-[11px]">
+                          {f.name}
+                          <button
+                            onClick={() => setSubmitFiles((prev) => prev.filter((_, j) => j !== i))}
+                            className="text-muted hover:text-foreground"
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {submitFiles.length > 0 && (
+                    <div className="flex gap-2">
+                      <textarea
+                        value={submitComment}
+                        onChange={(e) => setSubmitComment(e.target.value)}
+                        placeholder="提出コメント（任意）..."
+                        rows={1}
+                        className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none min-h-[36px]"
+                      />
+                      <button
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className="self-end rounded-lg bg-accent px-3 py-2 text-xs font-medium text-white hover:bg-accent-hover transition-colors disabled:opacity-50"
+                      >
+                        {submitting ? "提出中..." : "提出"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
