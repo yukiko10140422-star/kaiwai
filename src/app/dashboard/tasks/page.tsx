@@ -212,7 +212,7 @@ export default function TasksPage() {
 
       {/* Kanban */}
       <div className="flex-1 min-h-0">
-        <KanbanBoard tasks={filteredTasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} onUpdate={handleUpdateTask} />
+        <KanbanBoard tasks={filteredTasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} onUpdate={handleUpdateTask} members={members} />
       </div>
 
       <TaskCreateModal

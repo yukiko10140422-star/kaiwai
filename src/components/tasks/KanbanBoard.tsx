@@ -12,6 +12,7 @@ interface KanbanBoardProps {
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
   onDelete?: (taskId: string) => void;
   onUpdate?: (taskId: string, input: UpdateTaskInput) => Promise<void>;
+  members?: { id: string; display_name: string }[];
 }
 
 const columns: { status: TaskStatus; label: string; variant: "todo" | "progress" | "review" | "done" }[] = [
@@ -21,7 +22,7 @@ const columns: { status: TaskStatus; label: string; variant: "todo" | "progress"
   { status: "done", label: "完了", variant: "done" },
 ];
 
-export default function KanbanBoard({ tasks, onStatusChange, onDelete, onUpdate }: KanbanBoardProps) {
+export default function KanbanBoard({ tasks, onStatusChange, onDelete, onUpdate, members }: KanbanBoardProps) {
   const [selectedTask, setSelectedTask] = useState<TaskCardData | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
@@ -107,6 +108,7 @@ export default function KanbanBoard({ tasks, onStatusChange, onDelete, onUpdate 
           );
         }}
         onDelete={onDelete}
+        members={members}
         onUpdate={onUpdate ? async (taskId, input) => {
           await onUpdate(taskId, input);
           setSelectedTask((prev) =>

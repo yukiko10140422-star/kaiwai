@@ -1,11 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Modal, Avatar, Badge, Button } from "@/components/ui";
 import LocationInput from "./LocationInput";
 import type { TaskCardData } from "./TaskCard";
-import type { TaskStatus, TaskPriority } from "@/types/database";
+import type { TaskStatus, TaskPriority, TaskComment, Profile } from "@/types/database";
 import type { UpdateTaskInput } from "@/lib/tasks";
+import { setTaskAssignees, fetchTaskComments, createTaskComment } from "@/lib/tasks";
+
+type CommentWithAuthor = TaskComment & { author: Pick<Profile, "display_name" | "avatar_url"> };
+
+function relativeTime(dateStr: string): string {
+  const now = Date.now();
+  const diff = now - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "たった今";
+  if (minutes < 60) return `${minutes}分前`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}時間前`;
+  const days = Math.floor(hours / 24);
+  return `${days}日前`;
+}
 
 interface TaskDetailModalProps {
   task: TaskCardData | null;
@@ -13,6 +28,7 @@ interface TaskDetailModalProps {
   onStatusChange?: (taskId: string, status: TaskStatus) => void;
   onDelete?: (taskId: string) => void;
   onUpdate?: (taskId: string, input: UpdateTaskInput) => Promise<void>;
+  members?: { id: string; display_name: string }[];
 }
 
 const statusOptions: { value: TaskStatus; label: string; variant: "todo" | "progress" | "review" | "done" }[] = [
@@ -28,7 +44,7 @@ const priorityLabels: Record<TaskPriority, { label: string; color: string }> = {
   low: { label: "低", color: "text-gray-500" },
 };
 
-export default function TaskDetailModal({ task, onClose, onStatusChange, onDelete, onUpdate }: TaskDetailModalProps) {
+export default function TaskDetailModal({ task, onClose, onStatusChange, onDelete, onUpdate, members = [] }: TaskDetailModalProps) {
   const [editMode, setEditMode] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -36,7 +52,11 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
   const [dueDate, setDueDate] = useState("");
   const [dueTime, setDueTime] = useState("");
   const [location, setLocation] = useState("");
+  const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [comments, setComments] = useState<CommentWithAuthor[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
 
   // Sync form state when task changes
   useEffect(() => {
@@ -47,9 +67,49 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
       setDueDate(task.due_date ?? "");
       setDueTime(task.due_time ? task.due_time.slice(0, 5) : "");
       setLocation(task.location ?? "");
+      setAssigneeIds(task.assignees ? task.assignees.map((a) => a.id) : task.assignee_id ? [task.assignee_id] : []);
       setEditMode(false);
     }
   }, [task]);
+
+  // Fetch comments when task changes
+  const loadComments = useCallback(async (taskId: string) => {
+    setLoadingComments(true);
+    try {
+      const data = await fetchTaskComments(taskId);
+      setComments(data);
+    } catch (e) {
+      console.error("Failed to fetch comments:", e);
+    } finally {
+      setLoadingComments(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (task?.id) {
+      loadComments(task.id);
+      setCommentText("");
+    } else {
+      setComments([]);
+    }
+  }, [task?.id, loadComments]);
+
+  const handleAddComment = async () => {
+    if (!task || !commentText.trim()) return;
+    try {
+      await createTaskComment(task.id, commentText.trim());
+      setCommentText("");
+      await loadComments(task.id);
+    } catch (e) {
+      console.error("Failed to add comment:", e);
+    }
+  };
+
+  const toggleAssignee = (id: string) => {
+    setAssigneeIds((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
+  };
 
   const handleSave = async () => {
     if (!task || !onUpdate || !title.trim()) return;
@@ -63,6 +123,7 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
         due_time: dueTime || null,
         location: location.trim() || null,
       });
+      await setTaskAssignees(task.id, assigneeIds);
       setEditMode(false);
     } catch (e) {
       console.error("Failed to update task:", e);
@@ -142,6 +203,36 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
 
               {/* Location with Google Maps preview */}
               <LocationInput value={location} onChange={setLocation} id="edit-task-location" />
+
+              {/* Assignees (multi-select) */}
+              <div>
+                <label className="block text-xs text-muted mb-1">
+                  担当者（複数選択可）
+                </label>
+                <div className="flex flex-wrap gap-1.5 p-2 rounded-lg border border-border bg-background min-h-[38px]">
+                  {members.length === 0 ? (
+                    <span className="text-xs text-muted">メンバーがいません</span>
+                  ) : (
+                    members.map((m) => {
+                      const selected = assigneeIds.includes(m.id);
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => toggleAssignee(m.id)}
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                            selected
+                              ? "bg-accent text-white"
+                              : "bg-card text-muted hover:bg-border"
+                          }`}
+                        >
+                          {m.display_name}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
 
               {/* Save/Cancel */}
               <div className="flex justify-end gap-2 pt-2">
@@ -328,6 +419,57 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
                       削除
                     </button>
                   )}
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div className="pt-3 border-t border-border mt-4">
+                <h4 className="text-xs text-muted mb-3">コメント ({comments.length})</h4>
+
+                {/* Comment list */}
+                <div className="flex flex-col gap-3 mb-3 max-h-48 overflow-y-auto">
+                  {loadingComments ? (
+                    <p className="text-xs text-muted">読み込み中...</p>
+                  ) : comments.length === 0 ? (
+                    <p className="text-xs text-muted">コメントはまだありません</p>
+                  ) : (
+                    comments.map((c) => (
+                      <div key={c.id} className="flex gap-2">
+                        <Avatar name={c.author.display_name} src={c.author.avatar_url} size="xs" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium">{c.author.display_name}</span>
+                            <span className="text-[10px] text-muted">{relativeTime(c.created_at)}</span>
+                          </div>
+                          <p className="text-sm whitespace-pre-wrap break-words">{c.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Input */}
+                <div className="flex gap-2">
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="コメントを入力..."
+                    rows={2}
+                    className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none min-h-[44px]"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        handleAddComment();
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleAddComment}
+                    disabled={!commentText.trim()}
+                    className="self-end rounded-lg bg-accent px-3 py-2 text-xs font-medium text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                  >
+                    送信
+                  </button>
                 </div>
               </div>
             </>
