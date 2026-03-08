@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, type DragEvent, type KeyboardEvent, type FormEvent } from "react";
+import { useState, useRef, useCallback, useEffect, type DragEvent, type KeyboardEvent, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MentionSuggest, { type MentionMember } from "./MentionSuggest";
 
@@ -14,6 +14,7 @@ interface MessageInputProps {
   placeholder?: string;
   disabled?: boolean;
   members?: MentionMember[];
+  hideAttach?: boolean;
 }
 
 export default function MessageInput({
@@ -21,9 +22,19 @@ export default function MessageInput({
   placeholder = "Send a message...",
   disabled = false,
   members = [],
+  hideAttach = false,
 }: MessageInputProps) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<FilePreview[]>([]);
+  const filesRef = useRef(files);
+  filesRef.current = files;
+
+  useEffect(() => {
+    return () => {
+      filesRef.current.forEach(f => { if (f.previewUrl) URL.revokeObjectURL(f.previewUrl); });
+    };
+  }, []);
+
   const [isDragOver, setIsDragOver] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -234,7 +245,7 @@ export default function MessageInput({
                 )}
                 <button
                   onClick={() => removeFile(i)}
-                  className="absolute -top-1 -right-1 bg-status-overdue text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1 -right-1 bg-status-overdue text-white rounded-full w-5 h-5 sm:w-4 sm:h-4 text-[10px] flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   aria-label="Remove file"
                 >
                   &times;
@@ -260,26 +271,30 @@ export default function MessageInput({
       {/* Input row */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         {/* File attach button */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="shrink-0 rounded-lg p-2 text-muted hover:text-foreground hover:bg-card transition-colors"
-          aria-label="Attach file"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files) addFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
+        {!hideAttach && (
+          <>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="shrink-0 rounded-lg p-2 text-muted hover:text-foreground hover:bg-card transition-colors"
+              aria-label="Attach file"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files) addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </>
+        )}
 
         {/* Textarea */}
         <textarea

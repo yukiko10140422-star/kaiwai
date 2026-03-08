@@ -180,7 +180,8 @@ async function uploadDmAttachment(
   file: File
 ): Promise<MessageAttachment> {
   const supabase = createClient();
-  const filePath = `dm/${conversationId}/${messageId}/${Date.now()}_${file.name}`;
+  const safeName = file.name.replace(/[/\\:*?"<>|]/g, '_');
+  const filePath = `dm/${conversationId}/${messageId}/${Date.now()}_${safeName}`;
 
   const { error: uploadError } = await supabase.storage
     .from("attachments")

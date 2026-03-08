@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { MessageAttachment } from "@/types/database";
 
@@ -23,6 +23,7 @@ export default function FilePreviewModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0, tx: 0, ty: 0 });
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const current = attachments[currentIndex];
   const url = signedUrls[current?.id];
   const hasMultiple = attachments.length > 1;
@@ -50,13 +51,26 @@ export default function FilePreviewModal({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose, goNext, goPrev, hasMultiple]);
 
-  // Mouse wheel zoom
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    setScale((prev) => {
-      const next = prev - e.deltaY * 0.001;
-      return Math.min(Math.max(0.25, next), 5);
-    });
+  // Lock body scroll
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  // Mouse wheel zoom (passive: false to allow preventDefault)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      setScale((prev) => {
+        const next = prev - e.deltaY * 0.001;
+        return Math.min(Math.max(0.25, next), 5);
+      });
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
   }, []);
 
   // Pan with mouse drag when zoomed
@@ -201,13 +215,13 @@ export default function FilePreviewModal({
 
         {/* Image */}
         <motion.div
+          ref={containerRef}
           key={current.id}
           className="relative z-[1] flex items-center justify-center max-w-[90vw] max-h-[80vh]"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.2 }}
-          onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

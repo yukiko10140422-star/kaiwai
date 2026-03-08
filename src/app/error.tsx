@@ -14,7 +14,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-dvh items-center justify-center">
       <div className="glass rounded-3xl p-12 text-center max-w-md mx-4">
         <h1 className="text-4xl font-extrabold gradient-text mb-4">エラー</h1>
         <p className="text-muted mb-6">予期しないエラーが発生しました</p>

@@ -39,18 +39,22 @@ function formatFileSize(bytes: number): string {
 
 function useSignedUrl(storagePath: string) {
   const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    setError(false);
     const supabase = createClient();
     supabase.storage
       .from("attachments")
-      .createSignedUrl(storagePath, 3600) // 1時間有効
-      .then(({ data }) => {
-        if (data?.signedUrl) setUrl(data.signedUrl);
-      });
+      .createSignedUrl(storagePath, 3600)
+      .then(({ data, error: err }) => {
+        if (err || !data?.signedUrl) setError(true);
+        else setUrl(data.signedUrl);
+      })
+      .catch(() => setError(true));
   }, [storagePath]);
 
-  return url;
+  return { url, error };
 }
 
 function getFileTypeIcon(fileType: string): { icon: ReactNode; color: string } {
@@ -137,12 +141,27 @@ function AttachmentPreview({
   allAttachments: MessageAttachment[];
   onImageClick: (index: number) => void;
 }) {
-  const url = useSignedUrl(attachment.storage_path);
+  const { url, error } = useSignedUrl(attachment.storage_path);
   const isImage = attachment.file_type.startsWith("image/");
   const isVideo = attachment.file_type.startsWith("video/");
   const isAudio = attachment.file_type.startsWith("audio/");
   const isPdf = attachment.file_type === "application/pdf";
   const [imgLoaded, setImgLoaded] = useState(false);
+
+  if (error) {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-lg border border-status-overdue/30 bg-status-overdue/5 px-3 py-2 mt-1 text-xs text-status-overdue">
+        読み込みエラー
+        <a
+          href={`#`}
+          onClick={(e) => { e.preventDefault(); window.location.reload(); }}
+          className="text-accent hover:underline ml-1"
+        >
+          再読み込み
+        </a>
+      </div>
+    );
+  }
 
   if (!url) {
     return (
@@ -425,8 +444,8 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
         )}
       </div>
 
-      {/* Hover action: add reaction */}
-      <div className="absolute right-4 top-0 hidden group-hover:flex items-center">
+      {/* Hover/tap action: add reaction */}
+      <div className="absolute right-2 sm:right-4 top-0 flex sm:hidden sm:group-hover:flex items-center">
         <div className="relative">
           <button
             onClick={() => setShowPicker((v) => !v)}

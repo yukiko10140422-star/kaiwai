@@ -93,9 +93,9 @@ export default function FileListPanel({ channelId, conversationId, onClose }: Fi
 
   return (
     <motion.div
-      initial={{ width: 0, opacity: 0 }}
-      animate={{ width: 340, opacity: 1 }}
-      exit={{ width: 0, opacity: 0 }}
+      initial={{ x: "100%", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: "100%", opacity: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto w-full md:w-[360px] shrink-0 border-l border-border h-full overflow-hidden flex flex-col bg-sidebar"
     >

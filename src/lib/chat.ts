@@ -179,20 +179,26 @@ export async function editMessage(
   content: string
 ): Promise<void> {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
   const { error } = await supabase
     .from("messages")
     .update({ content, is_edited: true })
-    .eq("id", messageId);
+    .eq("id", messageId)
+    .eq("user_id", user.id);
 
   if (error) throw error;
 }
 
 export async function deleteMessage(messageId: string): Promise<void> {
   const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
   const { error } = await supabase
     .from("messages")
     .delete()
-    .eq("id", messageId);
+    .eq("id", messageId)
+    .eq("user_id", user.id);
 
   if (error) throw error;
 }
@@ -254,7 +260,8 @@ async function uploadAttachment(
   channelId: string,
   file: File
 ): Promise<MessageAttachment> {
-  const filePath = `channels/${channelId}/${messageId}/${Date.now()}_${file.name}`;
+  const safeName = file.name.replace(/[/\\:*?"<>|]/g, '_');
+  const filePath = `channels/${channelId}/${messageId}/${Date.now()}_${safeName}`;
 
   const { error: uploadError } = await supabase.storage
     .from("attachments")

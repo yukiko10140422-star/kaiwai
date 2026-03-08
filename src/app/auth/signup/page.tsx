@@ -51,7 +51,7 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="animated-gradient-bg flex min-h-screen items-center justify-center relative overflow-hidden">
+      <div className="animated-gradient-bg flex min-h-dvh items-center justify-center relative overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
         <div className="glass rounded-3xl p-8 w-full max-w-sm mx-4 text-center relative hover-glow">
           <h1 className="text-2xl font-bold mb-2 gradient-text">確認メールを送信しました</h1>
@@ -73,7 +73,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="animated-gradient-bg flex min-h-screen items-center justify-center relative overflow-hidden">
+    <div className="animated-gradient-bg flex min-h-dvh items-center justify-center relative overflow-hidden">
       <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-accent-secondary/10 blur-3xl pointer-events-none" />
 
@@ -122,7 +122,7 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus-glow transition-all"
               placeholder="6文字以上"
             />

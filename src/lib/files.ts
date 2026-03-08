@@ -21,9 +21,6 @@ const DOC_TYPES = [
 ];
 
 export function categorizeFile(fileType: string): Exclude<FileCategory, "all"> {
-  if (IMAGE_TYPES.some((t) => fileType.startsWith(t.split("/")[0] + "/"))) {
-    return fileType.startsWith("image/") ? "image" : "other";
-  }
   if (fileType.startsWith("image/")) return "image";
   if (fileType.startsWith("video/")) return "video";
   if (DOC_TYPES.includes(fileType)) return "document";
@@ -44,17 +41,17 @@ export async function getChannelFiles(channelId: string): Promise<FileWithMeta[]
 
   if (error) throw error;
 
-  const files: FileWithMeta[] = [];
-  for (const row of data ?? []) {
+  const rows = data ?? [];
+  const signedUrls = await Promise.all(
+    rows.map((row) =>
+      supabase.storage.from("attachments").createSignedUrl(row.storage_path, 3600)
+    )
+  );
+
+  return rows.map((row, i) => {
     const msg = (row as Record<string, unknown>).messages as Record<string, unknown>;
     const profile = msg.profiles as Pick<Profile, "id" | "display_name" | "avatar_url">;
-
-    // Get signed URL
-    const { data: urlData } = await supabase.storage
-      .from("attachments")
-      .createSignedUrl(row.storage_path, 3600); // 1 hour
-
-    files.push({
+    return {
       id: row.id,
       message_id: row.message_id,
       file_name: row.file_name,
@@ -63,11 +60,9 @@ export async function getChannelFiles(channelId: string): Promise<FileWithMeta[]
       storage_path: row.storage_path,
       created_at: row.created_at,
       sender: profile,
-      signed_url: urlData?.signedUrl ?? null,
-    });
-  }
-
-  return files;
+      signed_url: signedUrls[i]?.data?.signedUrl ?? null,
+    };
+  });
 }
 
 /**
@@ -84,16 +79,17 @@ export async function getDmFiles(conversationId: string): Promise<FileWithMeta[]
 
   if (error) throw error;
 
-  const files: FileWithMeta[] = [];
-  for (const row of data ?? []) {
+  const rows = data ?? [];
+  const signedUrls = await Promise.all(
+    rows.map((row) =>
+      supabase.storage.from("attachments").createSignedUrl(row.storage_path, 3600)
+    )
+  );
+
+  return rows.map((row, i) => {
     const msg = (row as Record<string, unknown>).messages as Record<string, unknown>;
     const profile = msg.profiles as Pick<Profile, "id" | "display_name" | "avatar_url">;
-
-    const { data: urlData } = await supabase.storage
-      .from("attachments")
-      .createSignedUrl(row.storage_path, 3600);
-
-    files.push({
+    return {
       id: row.id,
       message_id: row.message_id,
       file_name: row.file_name,
@@ -102,11 +98,9 @@ export async function getDmFiles(conversationId: string): Promise<FileWithMeta[]
       storage_path: row.storage_path,
       created_at: row.created_at,
       sender: profile,
-      signed_url: urlData?.signedUrl ?? null,
-    });
-  }
-
-  return files;
+      signed_url: signedUrls[i]?.data?.signedUrl ?? null,
+    };
+  });
 }
 
 export function formatFileSize(bytes: number): string {

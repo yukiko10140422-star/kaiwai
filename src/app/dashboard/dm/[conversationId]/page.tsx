@@ -14,6 +14,7 @@ import {
   unsubscribeFromDm,
   updateDmReadStatus,
 } from "@/lib/dm";
+import { showToast } from "@/lib/toast";
 import { createClient } from "@/lib/supabase/client";
 
 export default function DmPage() {
@@ -114,6 +115,7 @@ export default function DmPage() {
         await sendDmMessage(conversationId, content, files);
       } catch (e) {
         console.error("Failed to send DM:", e);
+        showToast("メッセージの送信に失敗しました", "error");
       }
     },
     [conversationId]

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { getStoredTheme, setTheme, type Theme } from "@/lib/theme";
+import { Sun, Moon, Monitor } from "lucide-react";
 
-const options: { value: Theme; label: string; icon: string }[] = [
-  { value: "light", label: "ライト", icon: "☀️" },
-  { value: "dark", label: "ダーク", icon: "🌙" },
-  { value: "system", label: "システム", icon: "💻" },
+const options: { value: Theme; label: string; icon: React.ReactNode }[] = [
+  { value: "light", label: "ライト", icon: <Sun className="w-4 h-4" /> },
+  { value: "dark", label: "ダーク", icon: <Moon className="w-4 h-4" /> },
+  { value: "system", label: "システム", icon: <Monitor className="w-4 h-4" /> },
 ];
 
 export default function ThemeToggle() {

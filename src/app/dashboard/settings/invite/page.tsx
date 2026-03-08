@@ -8,6 +8,7 @@ import {
   getInvitations,
   deleteInvitation,
 } from "@/lib/invitations";
+import { showToast } from "@/lib/toast";
 import type { Invitation } from "@/types/database";
 
 export default function InvitePage() {
@@ -52,11 +53,15 @@ export default function InvitePage() {
     }
   };
 
-  const handleCopyLink = (token: string) => {
+  const handleCopyLink = async (token: string) => {
     const url = `${window.location.origin}/auth/invite/${token}`;
-    navigator.clipboard.writeText(url);
-    setCopied(token);
-    setTimeout(() => setCopied(null), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(token);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      showToast("コピーに失敗しました", "error");
+    }
   };
 
   const getStatus = (inv: Invitation) => {

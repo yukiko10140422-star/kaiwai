@@ -148,6 +148,7 @@ export default function ThreadPanel({
       <MessageInput
         onSend={handleSend}
         placeholder="返信を入力..."
+        hideAttach
       />
     </motion.div>
   );

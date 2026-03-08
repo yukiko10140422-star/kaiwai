@@ -28,6 +28,7 @@ export default function ChannelPage() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [messages, setMessages] = useState<MessageWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [threadMessageId, setThreadMessageId] = useState<string | null>(null);
   const [showFiles, setShowFiles] = useState(false);
@@ -40,6 +41,7 @@ export default function ChannelPage() {
 
     async function load() {
       setLoading(true);
+      setLoaded(false);
       setError(null);
       setThreadMessageId(null);
 
@@ -80,6 +82,7 @@ export default function ChannelPage() {
         setChannel(ch);
         setMembers(mem);
         setMessages(msgs);
+        setLoaded(true);
         updateReadStatus(channelId);
       } catch (e) {
         if (!cancelled) {
@@ -97,6 +100,8 @@ export default function ChannelPage() {
 
   // Realtime subscription
   useEffect(() => {
+    if (!loaded) return;
+
     const subscription = subscribeToChannel(
       channelId,
       async (newMsg: Message) => {
@@ -146,7 +151,7 @@ export default function ChannelPage() {
     return () => {
       unsubscribeFromChannel(subscription);
     };
-  }, [channelId]);
+  }, [channelId, loaded]);
 
   const handleSend = useCallback(
     async (content: string, files: File[]) => {

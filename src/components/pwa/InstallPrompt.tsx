@@ -53,55 +53,20 @@ export default function InstallPrompt() {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        bottom: '1rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 9999,
-        background: '#1e293b',
-        border: '1px solid #334155',
-        borderRadius: '0.75rem',
-        padding: '0.75rem 1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-        maxWidth: '90vw',
-        color: '#e2e8f0',
-        fontSize: '0.875rem',
-      }}
+      className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-[9999] bg-sidebar border border-border rounded-xl px-4 py-3 flex items-center gap-3 shadow-lg max-w-[90vw] text-foreground text-sm safe-bottom"
     >
-      <span style={{ flex: 1 }}>
+      <span className="flex-1">
         KAIWAIをホーム画面に追加して、アプリとして使えます
       </span>
       <button
         onClick={handleInstall}
-        style={{
-          background: '#3b82f6',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '0.5rem',
-          padding: '0.5rem 1rem',
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '0.875rem',
-          whiteSpace: 'nowrap',
-        }}
+        className="bg-accent text-white border-none rounded-lg px-4 py-2 cursor-pointer font-semibold text-sm whitespace-nowrap hover:bg-accent/90 transition-colors"
       >
         インストール
       </button>
       <button
         onClick={handleDismiss}
-        style={{
-          background: 'transparent',
-          color: '#94a3b8',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '1.25rem',
-          lineHeight: 1,
-          padding: '0.25rem',
-        }}
+        className="bg-transparent text-muted border-none cursor-pointer text-xl leading-none p-1 hover:text-foreground transition-colors"
         aria-label="閉じる"
       >
         x

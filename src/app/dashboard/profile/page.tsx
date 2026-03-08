@@ -17,10 +17,10 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const supabase = createClient();
 
   useEffect(() => {
     async function loadProfile() {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push("/auth/login");
@@ -45,7 +45,7 @@ export default function ProfilePage() {
       setLoading(false);
     }
     loadProfile();
-  }, [router, supabase]);
+  }, [router]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,6 +64,7 @@ export default function ProfilePage() {
     setSaving(true);
     setMessage("");
 
+    const supabase = createClient();
     let avatarUrl = profile.avatar_url;
 
     if (avatarFile) {
@@ -107,7 +108,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-dvh items-center justify-center">
         <p className="text-muted">読み込み中...</p>
       </div>
     );
@@ -121,7 +122,7 @@ export default function ProfilePage() {
     .slice(0, 2);
 
   return (
-    <PageTransition className="flex min-h-screen items-center justify-center">
+    <PageTransition className="flex min-h-full items-center justify-center py-6">
       <div className="glass rounded-2xl p-8 w-full max-w-md mx-4">
         <h1 className="text-2xl font-bold mb-6">プロフィール設定</h1>
 

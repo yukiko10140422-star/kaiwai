@@ -39,7 +39,7 @@ export default function HomePage() {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("おはようございます");
     else if (hour < 18) setGreeting("お疲れ様です");
-    else setGreeting("お疲れ様です");
+    else setGreeting("こんばんは");
   }, []);
 
   useEffect(() => {
@@ -50,10 +50,12 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    fetchDashboardStats().then(setStats).catch(console.error);
-    fetchMemberProgress().then(setMembers).catch(console.error);
+    let cancelled = false;
+    fetchDashboardStats().then(d => { if (!cancelled) setStats(d); }).catch(console.error);
+    fetchMemberProgress().then(d => { if (!cancelled) setMembers(d); }).catch(console.error);
     fetchTasks()
       .then((tasks) => {
+        if (cancelled) return;
         const now = new Date();
         const upcoming = tasks
           .filter((t) => t.status !== "done" && t.due_date && new Date(t.due_date) >= now)
@@ -62,6 +64,7 @@ export default function HomePage() {
         setUpcomingTasks(upcoming);
       })
       .catch(console.error);
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {

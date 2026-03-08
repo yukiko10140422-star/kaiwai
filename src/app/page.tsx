@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="animated-gradient-bg flex min-h-screen items-center justify-center relative overflow-hidden">
+    <div className="animated-gradient-bg flex min-h-dvh items-center justify-center relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />

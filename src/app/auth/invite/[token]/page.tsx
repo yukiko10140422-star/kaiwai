@@ -67,7 +67,7 @@ export default function InviteAcceptPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-dvh">
         <p className="text-muted">招待を確認中…</p>
       </div>
     );
@@ -75,7 +75,7 @@ export default function InviteAcceptPage() {
 
   if (invalid) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="flex flex-col items-center justify-center min-h-dvh gap-4">
         <div className="glass rounded-2xl p-8 max-w-md text-center">
           <h1 className="text-xl font-bold mb-2">無効な招待リンク</h1>
           <p className="text-sm text-muted mb-4">
@@ -90,7 +90,7 @@ export default function InviteAcceptPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="flex items-center justify-center min-h-dvh p-4">
       <div className="glass rounded-2xl p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-2">KAIWAI に参加</h1>
         <p className="text-sm text-muted text-center mb-6">

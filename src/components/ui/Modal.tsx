@@ -85,6 +85,7 @@ export default function Modal({ open, onClose, title, children, className = "" }
             ref={modalRef}
             role="dialog"
             aria-modal="true"
+            aria-labelledby={title ? "modal-title" : undefined}
             className={`glass rounded-2xl p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto ${className}`}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -93,7 +94,7 @@ export default function Modal({ open, onClose, title, children, className = "" }
           >
             {title && (
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold">{title}</h2>
+                <h2 id="modal-title" className="text-lg font-bold">{title}</h2>
                 <button
                   onClick={onClose}
                   className="text-muted hover:text-foreground transition-colors text-xl leading-none"

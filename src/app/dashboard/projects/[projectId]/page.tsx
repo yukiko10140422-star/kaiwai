@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Button, Modal, Badge } from "@/components/ui";
 import PageTransition from "@/components/ui/PageTransition";
 import {
@@ -38,12 +39,8 @@ const statusVariant: Record<string, "todo" | "progress" | "review" | "done"> = {
   done: "done",
 };
 
-export default function ProjectDetailPage({
-  params,
-}: {
-  params: Promise<{ projectId: string }>;
-}) {
-  const { projectId } = use(params);
+export default function ProjectDetailPage() {
+  const { projectId } = useParams<{ projectId: string }>();
 
   const [project, setProject] = useState<ProjectWithStats | null>(null);
   const [tasks, setTasks] = useState<TaskCardData[]>([]);
