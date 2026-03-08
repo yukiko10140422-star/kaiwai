@@ -156,6 +156,62 @@ CREATE POLICY "x_select" ON table_a FOR SELECT
   USING (EXISTS (SELECT 1 FROM table_a WHERE ...));
 ```
 
+---
+
+## 7. iOS で検索バー（ヘッダー）が消える
+
+**症状:** iOS Safari / PWA スタンドアロンモードで DashboardHeader（検索ボタン＋通知ベル）が表示されない
+
+**原因:**
+- `body` に `padding-top: env(safe-area-inset-top)` を設定 + ダッシュボードコンテナが `h-dvh`（100dvh）
+- 合計高さ = safe-area-inset-top + 100dvh > ビューポート → `overflow-hidden` でヘッダーがクリップ
+
+**解決策:**
+- body から `padding-top` を削除
+- ダッシュボードコンテナに `safe-top` CSS クラスを追加（コンテナ内部で safe area を処理）
+
+**予防策:** `h-dvh` + `overflow-hidden` レイアウトでは safe area padding を必ずコンテナ「内部」で処理する。body に付けると高さがビューポートを超過する。
+
+---
+
+## 8. React インラインスタイルで `env()` が効かない
+
+**症状:** `style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}` が適用されない
+
+**原因:** CSS 関数 `env()` は React の JS インラインスタイルでは評価されない場合がある
+
+**解決策:** CSS クラスを使う（例: `.safe-top { padding-top: env(safe-area-inset-top, 0px); }`）
+
+**予防策:** `env()`, `var()` 等の CSS 関数はインラインスタイルではなく CSS クラスで定義する。
+
+---
+
+## 9. PWA スタンドアロンモードが動作しない（iOS）
+
+**症状:** Safari の「ホーム画面に追加」でインストールしてもブラウザモードで開かれる
+
+**原因（複合的）:**
+1. **Next.js 16 のバグ**: `appleWebApp.capable: true` が `apple-mobile-web-app-capable` ではなく `mobile-web-app-capable` を生成する（`apple-` プレフィックスが欠落）。iOS Safari はこのタグを認識しない
+2. `manifest.json` の `start_url` が認証必須ページ（`/dashboard`）→ リダイレクトでスタンドアロンが壊れる
+3. Service Worker が iOS PWA を妨害する可能性（WMS は SW なしで動作）
+4. ミドルウェアが `manifest.json` への GET リクエストにマッチし、認証チェックを実行していた
+
+**解決策:**
+1. 手動で `<meta name="apple-mobile-web-app-capable" content="yes" />` を `<head>` に追加（Next.js バグのワークアラウンド）
+2. `start_url` を `/` に変更
+3. Service Worker の登録スクリプトを削除（WMS と同じ構成に）
+4. ミドルウェアの matcher に `manifest.json` と `sw.js` の除外を追加
+
+**予防策:**
+- Next.js metadata API の `appleWebApp.capable` は iOS では動作しない（v16.1.6 時点）→ 手動メタタグが必要
+- PWA の `start_url` は認証不要なページを指定する
+- Service Worker は iOS PWA では不要な場合が多い。問題切り分けのため SW なしで先に動作確認する
+- ミドルウェアの matcher で静的ファイル（manifest.json, sw.js 等）を除外する
+- 修正後は iOS で「ホーム画面に追加」を再実行する必要がある（既存ショートカットは更新されない）
+- **重要**: PWA スタンドアロンモードはホーム画面アイコンから直接起動した場合のみ有効。Safari 内のリンク経由で開くとブラウザモードになる
+
+---
+
 安全なパターン:
 ```sql
 -- OK: 直接的な条件

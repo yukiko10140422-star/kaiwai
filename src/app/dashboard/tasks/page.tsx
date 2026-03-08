@@ -3,7 +3,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
 import TaskFilters, { defaultFilters, type FilterState } from "@/components/tasks/TaskFilters";
-import TaskCreateModal, { type TaskCreateFormData } from "@/components/tasks/TaskCreateModal";
+import dynamic from "next/dynamic";
+import type { TaskCreateFormData } from "@/components/tasks/TaskCreateModal";
+const TaskCreateModal = dynamic(() => import("@/components/tasks/TaskCreateModal"), { ssr: false });
 import { Button } from "@/components/ui";
 import PageTransition from "@/components/ui/PageTransition";
 import type { TaskCardData } from "@/components/tasks/TaskCard";

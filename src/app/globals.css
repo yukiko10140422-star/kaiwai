@@ -118,8 +118,8 @@ main, [class*="overflow-y-auto"] {
 /* Reduce motion on mobile for performance */
 @media (max-width: 768px) {
   *, *::before, *::after {
-    animation-duration: 0.15s !important;
-    transition-duration: 0.1s !important;
+    animation-duration: 0.1s !important;
+    transition-duration: 0.05s !important;
   }
 }
 
@@ -135,7 +135,7 @@ main, [class*="overflow-y-auto"] {
 /* Mobile: reduce heavy effects for performance */
 @media (max-width: 768px) {
   .glass {
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
   .hover-glow:hover {
@@ -178,6 +178,7 @@ main, [class*="overflow-y-auto"] {
 /* Hover lift effect */
 .hover-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
 }
 .hover-lift:hover {
   transform: translateY(-2px);
@@ -229,6 +230,7 @@ main, [class*="overflow-y-auto"] {
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* Safe area for iOS standalone mode */

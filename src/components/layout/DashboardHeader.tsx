@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { NotificationBell } from "@/components/notifications";
-import GlobalSearchDialog from "@/components/search/GlobalSearchDialog";
+import dynamic from "next/dynamic";
+const GlobalSearchDialog = dynamic(() => import("@/components/search/GlobalSearchDialog"), { ssr: false });
 
 interface DashboardHeaderProps {
   userId: string;

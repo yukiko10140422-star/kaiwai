@@ -6,8 +6,9 @@ import { AnimatePresence } from "framer-motion";
 import ChannelHeader from "@/components/chat/ChannelHeader";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
-import ThreadPanel from "@/components/chat/ThreadPanel";
-import FileListPanel from "@/components/chat/FileListPanel";
+import dynamic from "next/dynamic";
+const ThreadPanel = dynamic(() => import("@/components/chat/ThreadPanel"), { ssr: false });
+const FileListPanel = dynamic(() => import("@/components/chat/FileListPanel"), { ssr: false });
 import type { MessageWithAuthor } from "@/components/chat/MessageItem";
 import type { Channel, Profile, Message, MessageAttachment } from "@/types/database";
 import {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { Avatar } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import ChannelList from "./ChannelList";
@@ -38,10 +38,6 @@ const mobileNavItems = [
   { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
 ];
 
-const sidebarVariants = {
-  expanded: { width: 256 },
-  collapsed: { width: 64 },
-};
 
 export default function Sidebar({ user }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -61,28 +57,17 @@ export default function Sidebar({ user }: SidebarProps) {
 
   return (
     <>
-      <motion.aside
-        initial={false}
-        animate={isCollapsed ? "collapsed" : "expanded"}
-        variants={sidebarVariants}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      <aside
+        style={{ width: isCollapsed ? 64 : 256, transition: 'width 0.2s ease' }}
         className="hidden md:flex flex-col h-dvh bg-sidebar/90 backdrop-blur-md border-r border-border shrink-0 overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 h-16 border-b border-border">
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.span
-                key="logo"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="font-extrabold text-lg whitespace-nowrap gradient-text"
-              >
+          {!isCollapsed && (
+              <span className="font-extrabold text-lg whitespace-nowrap gradient-text">
                 KAIWAI
-              </motion.span>
-            )}
-          </AnimatePresence>
+              </span>
+          )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-1.5 rounded-lg hover:bg-card transition-colors shrink-0"
@@ -112,19 +97,7 @@ export default function Sidebar({ user }: SidebarProps) {
                 title={isCollapsed ? label : undefined}
               >
                 <Icon className="w-5 h-5 shrink-0" />
-                <AnimatePresence mode="wait">
-                  {!isCollapsed && (
-                    <motion.span
-                      key={label}
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                    >
-                      {label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap overflow-hidden">{label}</span>}
               </Link>
             );
           })}
@@ -151,24 +124,16 @@ export default function Sidebar({ user }: SidebarProps) {
               src={user.avatarUrl}
               size="sm"
             />
-            <AnimatePresence mode="wait">
-              {!isCollapsed && (
-                <motion.div
-                  key="userinfo"
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  className="overflow-hidden"
-                >
+            {!isCollapsed && (
+                <div className="overflow-hidden">
                   <p className="text-sm font-medium truncate max-w-[160px]">
                     {user.displayName}
                   </p>
                   <p className="text-xs text-muted truncate max-w-[160px]">
                     {user.email}
                   </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+            )}
           </Link>
           <button
             onClick={handleSignOut}
@@ -178,40 +143,21 @@ export default function Sidebar({ user }: SidebarProps) {
             title={isCollapsed ? "サインアウト" : undefined}
           >
             <SignOutIcon className="w-5 h-5 shrink-0" />
-            <AnimatePresence mode="wait">
-              {!isCollapsed && (
-                <motion.span
-                  key="signout"
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                >
-                  サインアウト
-                </motion.span>
-              )}
-            </AnimatePresence>
+            {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap overflow-hidden">サインアウト</span>}
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Mobile slide-out sidebar */}
-      <AnimatePresence>
-        {mobileOpen && (
+      {mobileOpen && (
           <>
-            <motion.div
+            <div
               className="md:hidden fixed inset-0 bg-black/50 z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
             />
-            <motion.aside
+            <aside
               className="md:hidden fixed left-0 top-0 bottom-0 w-72 bg-sidebar border-r border-border z-50 flex flex-col overflow-y-auto"
-              initial={{ x: -288 }}
-              animate={{ x: 0 }}
-              exit={{ x: -288 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              style={{ transform: 'translateX(0)', transition: 'transform 0.2s ease' }}
             >
               <div className="flex items-center justify-between p-4 h-16 border-b border-border">
                 <span className="font-bold text-lg">KAIWAI</span>
@@ -265,10 +211,9 @@ export default function Sidebar({ user }: SidebarProps) {
                   <span className="text-sm font-medium">サインアウト</span>
                 </button>
               </div>
-            </motion.aside>
+            </aside>
           </>
-        )}
-      </AnimatePresence>
+      )}
 
       {/* Mobile bottom bar */}
       <MobileNav pathname={pathname} />

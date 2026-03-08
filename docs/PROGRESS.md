@@ -200,3 +200,53 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 - Vercel にデプロイして iOS 実機でスタンドアロンモード確認
 - Safari からホーム画面に再追加してアドレスバー非表示を検証
 - 要件定義の再整理（ユーザーからの要望あり）
+
+### 2026-03-08 セッション8
+**実施内容: iOS PWA修正（検索バー消失・スタンドアロンモード）**
+
+**問題:** iOSで検索バー（DashboardHeader）が消える＋PWAスタンドアロンモードが正常に動作しない
+
+**原因分析（WMS v3との比較）:**
+1. **body padding + h-dvh の衝突**: `body` に `padding-top: env(safe-area-inset-top)` を設定しつつ、ダッシュボードコンテナが `h-dvh`（100dvh）で高さ固定 → 合計が viewport を超過し `overflow-hidden` でコンテンツがクリップされる
+2. **React インラインスタイルで `env()` は無効**: `style={{ paddingTop: 'env(safe-area-inset-top)' }}` は CSS 関数のため JS 経由では評価されない → CSS クラスを使う必要がある
+3. **メタタグ重複**: Next.js metadata API の `appleWebApp.capable: true` と手動 `<meta name="apple-mobile-web-app-capable">` が両方存在 → iOS が混乱
+4. **manifest.json の `start_url: "/dashboard"`**: 認証必須ページを指定 → PWA 起動時にリダイレクトが発生しスタンドアロンモードが壊れる
+5. **Service Worker が認証ページをキャッシュ**: APP_SHELL に `/dashboard` を含めていたが、キャッシュ時にリダイレクトされ不正なレスポンスがキャッシュされる
+
+**修正内容:**
+- `globals.css`: body から `padding-top: env(safe-area-inset-top)` を削除
+- `dashboard/layout.tsx`: コンテナに `safe-top` CSS クラスを追加（コンテナ内で safe area 処理）
+- `DashboardHeader.tsx`: 検索ボタンをアイコンのみから入力欄風の横長バーに変更（モバイル視認性向上）、背景を `bg-sidebar/80`（半透明）→ `bg-sidebar`（不透明）に変更
+- `layout.tsx`: 手動 `<meta name="apple-mobile-web-app-capable">` を削除（metadata API と重複）
+- `manifest.json`: `start_url` を `/dashboard` → `/` に変更
+- `sw.js`: APP_SHELL から認証必須ページを除外、キャッシュバージョンを v2 に更新
+
+**変更ファイル一覧:**
+- `src/app/globals.css`
+- `src/app/dashboard/layout.tsx`
+- `src/components/layout/DashboardHeader.tsx`
+- `src/app/layout.tsx`
+- `public/manifest.json`
+- `public/sw.js`
+
+**追加修正（セッション8 続き）:**
+- `layout.tsx`: 手動 `<meta name="apple-mobile-web-app-capable" content="yes" />` を再追加（Next.js 16.1.6 のバグ: `appleWebApp.capable: true` が `mobile-web-app-capable` を生成し、iOS 必須の `apple-` プレフィックスが欠落）
+- `layout.tsx`: Service Worker 登録スクリプトを削除（WMS は SW なしで動作しており、SW が iOS PWA を妨害していた）
+- `layout.tsx`: InstallPrompt コンポーネントを削除（iOS は Safari のネイティブ「ホーム画面に追加」を使用）
+- `middleware.ts`: matcher に `manifest.json` と `sw.js` の除外を追加（認証チェックがこれらの静的ファイルをブロックしていた）
+
+**最終的な原因:**
+- Next.js 16.1.6 が `apple-mobile-web-app-capable` メタタグを正しく生成しなかった（バグ）
+- Safari 内のリンク経由で開くとブラウザモードになる（ホーム画面アイコンから直接起動が必須）
+
+**教訓（再発防止）:**
+- `h-dvh` + `overflow-hidden` レイアウトでは safe area padding をコンテナ「内部」で処理すること（body に付けると高さが viewport を超過する）
+- React インラインスタイルでは CSS 関数（`env()`, `var()`）が動かない場合がある → CSS クラスを使う
+- PWA の `start_url` は認証不要なページ（`/`）を指定し、ミドルウェアでリダイレクトさせる
+- Service Worker の APP_SHELL に認証必須ページを入れない
+- **Next.js 16 の `appleWebApp.capable` は iOS では動作しない** → 手動で `<meta name="apple-mobile-web-app-capable" content="yes" />` を追加する必要がある
+- **PWA スタンドアロンモードはホーム画面アイコンから直接起動した場合のみ有効**。Safari 内のリンク経由では通常のブラウザモードになる
+- ミドルウェアの matcher で `manifest.json` 等の PWA 静的ファイルを除外すること
+
+**次回やること:**
+- 要件定義の再整理（ユーザーからの要望あり）

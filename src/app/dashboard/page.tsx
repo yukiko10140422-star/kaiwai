@@ -13,7 +13,8 @@ import {
 } from "@/lib/dashboard";
 import { fetchTasks } from "@/lib/tasks";
 import type { TaskCardData } from "@/components/tasks/TaskCard";
-import TaskDetailModal from "@/components/tasks/TaskDetailModal";
+import dynamic from "next/dynamic";
+const TaskDetailModal = dynamic(() => import("@/components/tasks/TaskDetailModal"), { ssr: false });
 import { fetchNotifications } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/client";
 import type { Notification } from "@/types/database";
