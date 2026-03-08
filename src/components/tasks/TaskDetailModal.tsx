@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Modal, Avatar, Badge, Button } from "@/components/ui";
+import LocationInput from "./LocationInput";
 import type { TaskCardData } from "./TaskCard";
 import type { TaskStatus, TaskPriority } from "@/types/database";
 import type { UpdateTaskInput } from "@/lib/tasks";
@@ -139,17 +140,8 @@ export default function TaskDetailModal({ task, onClose, onStatusChange, onDelet
                 </div>
               </div>
 
-              {/* Location */}
-              <div>
-                <label className="block text-xs text-muted mb-1">場所</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
-                  placeholder="例: 会議室A、Zoom"
-                />
-              </div>
+              {/* Location with Google Maps preview */}
+              <LocationInput value={location} onChange={setLocation} id="edit-task-location" />
 
               {/* Save/Cancel */}
               <div className="flex justify-end gap-2 pt-2">

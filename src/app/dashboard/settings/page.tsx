@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button, Input } from "@/components/ui";
 import PageTransition from "@/components/ui/PageTransition";
 import ThemeToggle from "@/components/settings/ThemeToggle";
+import UsageGuide from "@/components/settings/UsageGuide";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SettingsPage() {
@@ -70,6 +71,9 @@ export default function SettingsPage() {
           </Link>
         </div>
       </section>
+
+      {/* 使い方ガイド */}
+      <UsageGuide />
 
       {/* パスワード変更 */}
       <section className="glass rounded-2xl p-5">

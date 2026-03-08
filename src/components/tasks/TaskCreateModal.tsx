@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Modal, Button } from "@/components/ui";
+import LocationInput from "./LocationInput";
 import type { TaskStatus, TaskPriority } from "@/types/database";
 import { showToast } from "@/lib/toast";
 
@@ -271,20 +272,8 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
           </div>
         </div>
 
-        {/* Location */}
-        <div>
-          <label htmlFor="task-location" className="block text-xs text-muted mb-1">
-            場所
-          </label>
-          <input
-            id="task-location"
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
-            placeholder="例: 会議室A、Zoom"
-          />
-        </div>
+        {/* Location with Google Maps preview */}
+        <LocationInput value={location} onChange={setLocation} />
 
         {/* Submit */}
         <div className="flex justify-end gap-2 pt-2">

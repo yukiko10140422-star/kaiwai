@@ -8,40 +8,44 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.4.0";
+const CURRENT_VERSION = "1.5.0";
 
 interface ChangelogEntry {
   version: string;
   date: string;
+  title: string;
   items: { type: "new" | "improve" | "fix"; text: string }[];
 }
 
 const changelog: ChangelogEntry[] = [
   {
+    version: "1.5.0",
+    date: "2026-03-08",
+    title: "メッセージ・タスクがもっと便利に",
+    items: [
+      { type: "new", text: "送ったメッセージを後から取り消したり、内容を編集できるようになりました" },
+      { type: "new", text: "作ったタスクの内容をあとから変更できるようになりました" },
+      { type: "new", text: "タスクに場所を入れると、Google Mapsの地図が表示されるようになりました" },
+    ],
+  },
+  {
     version: "1.4.0",
     date: "2026-03-08",
+    title: "タスク・チャットの機能追加",
     items: [
-      { type: "new", text: "メッセージの取り消し・編集ができるようになりました（自分のメッセージのみ）" },
-      { type: "new", text: "タスクの編集機能を追加しました（タスク詳細画面から）" },
+      { type: "new", text: "タスクに「時間」と「場所」を設定できるようになりました" },
+      { type: "new", text: "チャットにYouTubeのリンクを貼ると動画プレビューが表示されます" },
+      { type: "new", text: "議事録にファイルを添付できるようになりました" },
     ],
   },
   {
     version: "1.3.0",
-    date: "2026-03-08",
-    items: [
-      { type: "new", text: "タスクに時間指定・場所フィールドを追加" },
-      { type: "new", text: "場所にGoogle Mapsを連携表示" },
-      { type: "new", text: "チャットでYouTubeリンクのプレビュー表示" },
-      { type: "new", text: "議事録にファイル添付機能を追加" },
-    ],
-  },
-  {
-    version: "1.2.0",
     date: "2026-03-07",
+    title: "見た目の改善・動作の高速化",
     items: [
-      { type: "improve", text: "チャットをLINE風レイアウトに変更（自分のメッセージが右側）" },
-      { type: "improve", text: "アプリ全体の軽量化（アニメーション削減・バンドルサイズ最適化）" },
-      { type: "fix", text: "iOS PWAスタンドアローンモードの修正" },
+      { type: "improve", text: "チャットがLINE風のレイアウトになりました（自分のメッセージが右側に表示）" },
+      { type: "improve", text: "アプリの表示速度が大幅に向上しました" },
+      { type: "fix", text: "iPhoneのホーム画面から開いたときの表示を修正しました" },
     ],
   },
 ];
@@ -85,10 +89,10 @@ export default function WhatsNewModal() {
       <div className="flex flex-col gap-4">
         {entries.map((entry) => (
           <div key={entry.version}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-bold">v{entry.version}</span>
-              <span className="text-xs text-muted">{entry.date}</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-bold">{entry.title}</span>
             </div>
+            <p className="text-[11px] text-muted mb-2">{entry.date}</p>
             <ul className="flex flex-col gap-1.5">
               {entry.items.map((item, i) => {
                 const badge = typeLabel[item.type];
