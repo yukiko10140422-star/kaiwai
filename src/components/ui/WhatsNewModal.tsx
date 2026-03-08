@@ -56,27 +56,28 @@ const typeLabel: Record<string, { label: string; color: string }> = {
   fix: { label: "修正", color: "bg-amber-500/20 text-amber-500" },
 };
 
-const STORAGE_KEY = "kaiwai_last_seen_version";
+const STORAGE_KEY = "kaiwai_whats_new_dismissed";
 
 export default function WhatsNewModal() {
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
+  // 毎回ログイン時に表示。セッション中に閉じたら再表示しない
   useEffect(() => {
     try {
-      const seen = localStorage.getItem(STORAGE_KEY);
-      if (seen !== CURRENT_VERSION) {
+      const dismissed = sessionStorage.getItem(STORAGE_KEY);
+      if (dismissed !== CURRENT_VERSION) {
         setOpen(true);
       }
     } catch {
-      // localStorage unavailable
+      setOpen(true);
     }
   }, []);
 
   const handleClose = () => {
     setOpen(false);
     try {
-      localStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
+      sessionStorage.setItem(STORAGE_KEY, CURRENT_VERSION);
     } catch {
       // ignore
     }
@@ -85,8 +86,14 @@ export default function WhatsNewModal() {
   const entries = showAll ? changelog : changelog.slice(0, 1);
 
   return (
-    <Modal open={open} onClose={handleClose} title="アップデート情報" className="max-w-sm">
+    <Modal open={open} onClose={handleClose} className="max-w-sm">
       <div className="flex flex-col gap-4">
+        {/* Header without × button */}
+        <div className="text-center">
+          <p className="text-lg font-bold">アップデート情報</p>
+          <p className="text-xs text-muted mt-0.5">KAIWAIの最新の変更点</p>
+        </div>
+
         {entries.map((entry) => (
           <div key={entry.version}>
             <div className="flex items-center gap-2 mb-1">
@@ -120,7 +127,7 @@ export default function WhatsNewModal() {
 
         <button
           onClick={handleClose}
-          className="w-full rounded-lg bg-accent text-white py-2 text-sm font-medium hover:bg-accent-hover transition-colors mt-1"
+          className="w-full rounded-lg bg-accent text-white py-2.5 text-sm font-medium hover:bg-accent-hover transition-colors mt-1"
         >
           OK
         </button>
