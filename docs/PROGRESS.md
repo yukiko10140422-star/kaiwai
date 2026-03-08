@@ -1,7 +1,7 @@
 # KAIWAI - 進捗ログ
 
 ## 現在のフェーズ
-Phase 1: 基盤構築（完了）→ Phase 2 開始可能
+Phase 5: ポリッシュ（継続中）
 
 ## 全体進捗
 
@@ -43,14 +43,29 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 - [x] リアクション機能（絵文字トグル、ピッカー、楽観的UI更新）
 - [x] スレッド返信UI（右パネル、Realtime購読）
 
-### Phase 3: タスク・ダッシュボード
+### Phase 3: タスク・ダッシュボード ✓
 - [x] タスク機能 Supabase接続（CRUD、Realtime、楽観的UI更新）
 - [x] 進捗ダッシュボード Supabase接続
+- [x] タスク編集機能（詳細モーダルから全フィールド編集可能）
+- [x] タスクに時間指定・場所フィールド追加（DB: due_time, location カラム）
+- [x] 場所入力時の Google Maps プレビュー連携
 
-### Phase 5: ポリッシュ ✓
+### Phase 4: チャット拡張 ✓
+- [x] メッセージ取り消し（削除）機能
+- [x] メッセージ編集機能
+- [x] LINE風コンテキストメニュー（長押し/右クリック）
+- [x] YouTubeリンクプレビュー
+- [x] チャットLINE風レイアウト（自分=右、相手=左）
+
+### Phase 5: ポリッシュ（継続中）
 - [x] 招待機能
 - [x] デプロイ準備（next.config.ts画像ドメイン設定、.env.example、ビルド成功確認）
 - [x] 設定ページ整備（テーマ切替、招待リンク、パスワード変更）
+- [x] iOS PWA スタンドアロンモード修正
+- [x] パフォーマンス最適化（framer-motion 除去、バンドルサイズ削減）
+- [x] 議事録ファイル添付機能
+- [x] アップデート通知（WhatsNewModal）
+- [x] 使い方ガイド（設定画面内）
 
 ## セッションログ
 
@@ -250,3 +265,76 @@ Phase 1: 基盤構築（完了）→ Phase 2 開始可能
 
 **次回やること:**
 - 要件定義の再整理（ユーザーからの要望あり）
+
+### 2026-03-08 セッション9
+**実施内容: 機能追加・UX改善**
+
+**1. パフォーマンス最適化（セッション8の続き）:**
+- framer-motion を30+コンポーネントから完全削除（バンドル -95KB）
+- `next/dynamic` で重いモーダルを遅延読み込み
+- `optimizePackageImports` で lucide-react をツリーシェイク
+- モバイル CSS: backdrop-filter 軽減、animation/transition 短縮
+
+**2. チャット LINE 風レイアウト:**
+- 自分のメッセージ: 右寄せ・青背景・白文字
+- 相手のメッセージ: 左寄せ・カード背景・アバター付き
+
+**3. チャット機能拡張:**
+- YouTube リンクのプレビュー表示（iframe 埋め込み）
+- URL プレビューコンポーネント新規作成（UrlPreview.tsx, url-preview.ts）
+
+**4. 議事録ファイル添付:**
+- Supabase Storage（note-attachments バケット）を利用
+- アップロード、一覧表示、ダウンロード、削除に対応
+
+**5. タスク機能拡張:**
+- DB に `due_time TIME` / `location TEXT` カラム追加
+- タスク作成モーダルに時間・場所入力欄追加
+- タスク詳細に Google Maps iframe 埋め込み + リンク
+- LocationInput コンポーネント: 入力中に地図プレビューを自動表示（800ms デバウンス）
+
+**6. メッセージ取り消し・編集:**
+- `deleteMessage` / `editMessage` は既に lib/chat.ts に実装済みだったため、UI を追加
+- 初期実装: `...` ボタン常時表示 → ユーザーフィードバックで **LINE 風長押しメニュー** に変更
+- モバイル: 500ms 長押しでコンテキストメニュー表示
+- PC: 右クリックでコンテキストメニュー表示
+- メニュー内容: リアクション絵文字一覧 + スレッド返信 + 編集 + 取り消し
+- 常時表示のニコちゃんボタン・`...` ボタンを全削除しすっきりした UI に
+- Realtime UPDATE イベントも購読（他端末での編集がリアルタイム反映）
+
+**7. タスク編集機能:**
+- TaskDetailModal に編集モード追加（タイトル、説明、優先度、期限、時間、場所）
+- KanbanBoard → TaskDetailModal → tasks/page.tsx の `onUpdate` コールバックチェーン
+- `updateTask` 関数で Supabase に保存、一覧を再取得
+
+**8. アップデート通知:**
+- WhatsNewModal: ログイン時に最新アップデート情報をモーダル表示
+- sessionStorage で同セッション中の再表示を抑制（毎ログイン時には表示）
+- × ボタンなし、OK ボタンのみで閉じるクリーンな UI
+- 過去のアップデート履歴も展開表示可能
+- 非エンジニア向けの平易な日本語で記述
+
+**9. 使い方ガイド:**
+- 設定ページ内にアコーディオン形式の使い方ガイドを追加
+- チャット、DM、タスク、議事録、通知、検索、スマホの使い方をカバー
+
+**変更ファイル一覧（主要）:**
+- `src/components/chat/MessageItem.tsx` - LINE 風長押しメニュー、編集モード
+- `src/components/chat/MessageList.tsx` - onDelete/onEdit props パススルー
+- `src/app/dashboard/chat/[channelId]/page.tsx` - メッセージ削除/編集ハンドラ、Realtime UPDATE
+- `src/app/dashboard/dm/[conversationId]/page.tsx` - メッセージ削除/編集ハンドラ
+- `src/lib/chat.ts` - subscribeToChannel に UPDATE イベント追加
+- `src/components/tasks/TaskDetailModal.tsx` - 編集モード追加
+- `src/components/tasks/TaskCreateModal.tsx` - LocationInput 統合
+- `src/components/tasks/LocationInput.tsx` - 新規（Google Maps プレビュー付き入力）
+- `src/components/tasks/KanbanBoard.tsx` - onUpdate prop パススルー
+- `src/app/dashboard/tasks/page.tsx` - handleUpdateTask 追加
+- `src/components/ui/WhatsNewModal.tsx` - 新規（アップデート通知モーダル）
+- `src/components/settings/UsageGuide.tsx` - 新規（使い方ガイド）
+- `src/app/dashboard/settings/page.tsx` - 使い方ガイド統合
+- `src/app/dashboard/layout.tsx` - WhatsNewModal 統合
+
+**次回やること:**
+- ブラウザ/モバイル実機で長押しメニューの動作確認
+- タスクの担当者変更 UI（編集モードに未実装）
+- プロジェクト管理機能の拡充

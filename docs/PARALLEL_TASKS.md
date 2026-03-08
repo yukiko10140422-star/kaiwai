@@ -33,6 +33,23 @@
 
 ## 現在振れるタスク
 
+### Task U: タスク担当者変更UI
+**内容:** タスク編集モードで担当者を変更できるようにする
+**参照ファイル:**
+- `src/components/tasks/TaskDetailModal.tsx` - 編集モード（既存、担当者変更が未実装）
+- `src/lib/tasks.ts` - `setTaskAssignees` 関数（既に実装済み）
+- `src/components/tasks/TaskCreateModal.tsx` - 担当者選択UI（参考）
+**依存:** なし
+
+### Task V: プロジェクト管理機能拡充
+**内容:** プロジェクト一覧・作成・編集・削除の管理ページ
+**参照ファイル:**
+- `src/app/dashboard/projects/` - 既存プロジェクトページ
+- `src/lib/tasks.ts` - `fetchProjects` 関数
+**依存:** なし
+
+---
+
 ### Task O: メンション機能 - **完了**
 **内容:** チャットで @ユーザー名 を入力してメンバーに通知を送る機能
 **参照ファイル:**
