@@ -6,6 +6,7 @@ import { Button, Input } from "@/components/ui";
 import PageTransition from "@/components/ui/PageTransition";
 import ThemeToggle from "@/components/settings/ThemeToggle";
 import UsageGuide from "@/components/settings/UsageGuide";
+import NotificationPermission from "@/components/notifications/NotificationPermission";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SettingsPage() {
@@ -58,6 +59,9 @@ export default function SettingsPage() {
         <h3 className="font-semibold mb-3">テーマ</h3>
         <ThemeToggle />
       </section>
+
+      {/* ブラウザ通知 */}
+      <NotificationPermission />
 
       {/* 招待管理 */}
       <section className="glass rounded-2xl p-5">

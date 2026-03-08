@@ -4,3 +4,4 @@ export { default as StatCard } from "./StatCard";
 export { default as CalendarView } from "./CalendarView";
 export { default as MemberProgress } from "./MemberProgress";
 export { default as ActivityTimeline } from "./ActivityTimeline";
+export { default as WeeklyReport } from "./WeeklyReport";

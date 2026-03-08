@@ -8,6 +8,7 @@ import {
   CalendarView,
   MemberProgress,
   ActivityTimeline,
+  WeeklyReport,
 } from "@/components/dashboard";
 import PageTransition from "@/components/ui/PageTransition";
 import TaskDetailModal from "@/components/tasks/TaskDetailModal";
@@ -206,8 +207,11 @@ export default function ProgressPage() {
         </div>
       </div>
 
-      {/* アクティビティログ */}
-      <ActivityTimeline />
+      {/* 週次レポート + アクティビティログ */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+        <WeeklyReport />
+        <ActivityTimeline />
+      </div>
 
       <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
     </PageTransition>

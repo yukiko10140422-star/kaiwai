@@ -9,6 +9,7 @@ import {
   markAllAsRead,
   subscribeToNotifications,
 } from "@/lib/notifications";
+import { showBrowserNotification } from "@/lib/browser-notifications";
 import NotificationList from "./NotificationList";
 
 interface NotificationBellProps {
@@ -35,6 +36,7 @@ export default function NotificationBell({ userId, className = "" }: Notificatio
     if (!userId) return;
     const unsubscribe = subscribeToNotifications(userId, (newNotification) => {
       setNotifications((prev) => [newNotification, ...prev]);
+      showBrowserNotification(newNotification.title, newNotification.body);
     });
     return unsubscribe;
   }, [userId]);
