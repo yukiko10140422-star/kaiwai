@@ -6,10 +6,12 @@ import {
   isNotificationSupported,
   getNotificationPermission,
 } from "@/lib/browser-notifications";
+import { useI18n } from "@/lib/i18n";
 
 export default function NotificationPermission() {
   const [permission, setPermission] = useState<string>("default");
   const [supported, setSupported] = useState(true);
+  const { t } = useI18n();
 
   useEffect(() => {
     setSupported(isNotificationSupported());
@@ -25,9 +27,9 @@ export default function NotificationPermission() {
 
   return (
     <section className="glass rounded-2xl p-5">
-      <h3 className="font-semibold mb-2">ブラウザ通知</h3>
+      <h3 className="font-semibold mb-2">{t("settings.notifications")}</h3>
       <p className="text-sm text-muted mb-3">
-        タブを閉じていても通知を受け取れます
+        {t("settings.notifications.desc")}
       </p>
       {permission === "granted" ? (
         <div className="flex items-center gap-2 text-sm text-status-done">
@@ -44,18 +46,18 @@ export default function NotificationPermission() {
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          通知は有効です
+          {t("settings.notifications.enabled")}
         </div>
       ) : permission === "denied" ? (
         <p className="text-sm text-muted">
-          通知がブロックされています。ブラウザの設定から許可してください。
+          {t("settings.notifications.blocked")}
         </p>
       ) : (
         <button
           onClick={handleEnable}
           className="rounded-lg bg-accent text-white px-4 py-2 text-sm font-medium hover:bg-accent-hover transition-colors"
         >
-          通知を有効にする
+          {t("settings.notifications.enable")}
         </button>
       )}
     </section>

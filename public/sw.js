@@ -1,107 +1,100 @@
-// KAIWAI Service Worker
-const CACHE_NAME = 'kaiwai-v2';
-const STATIC_CACHE = 'kaiwai-static-v2';
+// KAIWAI Service Worker - Offline Support
+const CACHE_VERSION = "kaiwai-v3";
 
-// App shell files to cache on install (only static assets, no auth-required pages)
-const APP_SHELL = [
-  '/manifest.json',
-  '/icons/icon.svg',
+// Static assets to pre-cache on install
+const STATIC_ASSETS = [
+  "/",
+  "/offline",
+  "/manifest.json",
+  "/icons/icon.svg",
 ];
 
-// Install: cache app shell
-self.addEventListener('install', (event) => {
+// Install: cache static assets
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL).catch((err) => {
-        console.warn('SW: Some app shell resources failed to cache:', err);
+    caches.open(CACHE_VERSION).then((cache) => {
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn("SW: Some assets failed to cache:", err);
       });
     })
   );
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
-self.addEventListener('activate', (event) => {
+// Activate: clean old caches
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME && key !== STATIC_CACHE)
-          .map((key) => caches.delete(key))
+        keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key))
       );
     })
   );
   self.clients.claim();
 });
 
-// Fetch handler
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
+// Fetch: network-first for API, cache-first for static
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
 
   // Skip non-GET requests
-  if (request.method !== 'GET') return;
+  if (event.request.method !== "GET") return;
 
-  // Skip cross-origin requests
+  // Skip Supabase API calls and external URLs
+  if (url.hostname.includes("supabase")) return;
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for API calls and Supabase
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
-    event.respondWith(networkFirst(request));
+  // Skip auth pages - never cache auth flows
+  if (url.pathname.startsWith("/auth")) return;
+
+  // For navigation requests: network-first, fall back to offline page
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match("/offline").then((cached) => {
+          return cached || new Response("Offline", {
+            status: 503,
+            headers: { "Content-Type": "text/html" },
+          });
+        });
+      })
+    );
     return;
   }
 
-  // Cache-first for static assets (images, fonts, icons)
-  if (
-    url.pathname.startsWith('/icons/') ||
-    url.pathname.startsWith('/_next/static/') ||
-    url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|woff2?|ttf|eot)$/)
-  ) {
-    event.respondWith(cacheFirst(request));
+  // For static assets: cache-first
+  if (url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|gif|webp|woff2?|ttf|eot)$/) ||
+      url.pathname.startsWith("/_next/static/") ||
+      url.pathname.startsWith("/icons/")) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        }).catch(() => {
+          return new Response("", { status: 404 });
+        });
+      })
+    );
     return;
   }
 
-  // Network-first for everything else (pages, etc.)
-  event.respondWith(networkFirst(request));
+  // Default: network-first with cache fallback
+  event.respondWith(
+    fetch(event.request).then((response) => {
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(event.request).then((cached) => {
+        return cached || new Response("", { status: 503 });
+      });
+    })
+  );
 });
-
-// Network-first strategy
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    // Return offline fallback for navigation requests
-    if (request.mode === 'navigate') {
-      const fallback = await caches.match('/dashboard');
-      if (fallback) return fallback;
-    }
-    return new Response('オフラインです', {
-      status: 503,
-      statusText: 'Offline',
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-    });
-  }
-}
-
-// Cache-first strategy
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    return new Response('', { status: 404 });
-  }
-}

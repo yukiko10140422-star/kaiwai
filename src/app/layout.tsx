@@ -54,6 +54,11 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("kaiwai-theme");if(t&&t!=="system"){document.documentElement.setAttribute("data-theme",t);document.documentElement.classList.add(t)}}catch(e){}})()`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});})}`,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

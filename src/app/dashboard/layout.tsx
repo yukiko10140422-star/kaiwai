@@ -7,6 +7,7 @@ import ToastContainer from "@/components/ui/ToastContainer";
 import WhatsNewModal from "@/components/ui/WhatsNewModal";
 import InstallGuideModal from "@/components/ui/InstallGuideModal";
 import TaskDueChecker from "@/components/notifications/TaskDueChecker";
+import { I18nProvider } from "@/lib/i18n";
 
 export default async function DashboardLayout({
   children,
@@ -32,20 +33,22 @@ export default async function DashboardLayout({
   };
 
   return (
-    <ToastProvider userId={user.id}>
-      <div className="flex h-dvh overflow-hidden safe-top">
-        <Sidebar user={userInfo} />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <DashboardHeader userId={user.id} />
-          <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
-            {children}
-          </main>
+    <I18nProvider>
+      <ToastProvider userId={user.id}>
+        <div className="flex h-dvh overflow-hidden safe-top">
+          <Sidebar user={userInfo} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <DashboardHeader userId={user.id} />
+            <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-      <ToastContainer />
-      <WhatsNewModal />
-      <InstallGuideModal />
-      <TaskDueChecker />
-    </ToastProvider>
+        <ToastContainer />
+        <WhatsNewModal />
+        <InstallGuideModal />
+        <TaskDueChecker />
+      </ToastProvider>
+    </I18nProvider>
   );
 }

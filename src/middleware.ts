@@ -37,7 +37,8 @@ export async function middleware(request: NextRequest) {
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/auth") &&
-    request.nextUrl.pathname !== "/"
+    request.nextUrl.pathname !== "/" &&
+    request.nextUrl.pathname !== "/offline"
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Avatar } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n";
 import ChannelList from "./ChannelList";
 import DmList from "./DmList";
 
@@ -20,23 +21,23 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { href: "/dashboard", label: "ホーム", icon: HomeIcon },
-  { href: "/dashboard/chat", label: "チャット", icon: ChatIcon },
-  { href: "/dashboard/tasks", label: "タスク", icon: TaskIcon },
-  { href: "/dashboard/projects", label: "プロジェクト", icon: ProjectIcon },
-  { href: "/dashboard/notes", label: "議事録", icon: NotesIcon },
-  { href: "/dashboard/progress", label: "進捗", icon: ProgressIcon },
-  { href: "/dashboard/requests", label: "リクエスト", icon: RequestIcon },
-  { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
+  { href: "/dashboard", labelKey: "nav.home", icon: HomeIcon },
+  { href: "/dashboard/chat", labelKey: "nav.chat", icon: ChatIcon },
+  { href: "/dashboard/tasks", labelKey: "nav.tasks", icon: TaskIcon },
+  { href: "/dashboard/projects", labelKey: "nav.projects", icon: ProjectIcon },
+  { href: "/dashboard/notes", labelKey: "nav.notes", icon: NotesIcon },
+  { href: "/dashboard/progress", labelKey: "nav.progress", icon: ProgressIcon },
+  { href: "/dashboard/requests", labelKey: "nav.requests", icon: RequestIcon },
+  { href: "/dashboard/settings", labelKey: "nav.settings", icon: SettingsIcon },
 ];
 
 // Mobile bottom nav: only show key tabs
 const mobileNavItems = [
-  { href: "/dashboard", label: "ホーム", icon: HomeIcon },
-  { href: "/dashboard/chat", label: "チャット", icon: ChatIcon },
-  { href: "/dashboard/tasks", label: "タスク", icon: TaskIcon },
-  { href: "/dashboard/projects", label: "PJ", icon: ProjectIcon },
-  { href: "/dashboard/settings", label: "設定", icon: SettingsIcon },
+  { href: "/dashboard", labelKey: "nav.home", icon: HomeIcon },
+  { href: "/dashboard/chat", labelKey: "nav.chat", icon: ChatIcon },
+  { href: "/dashboard/tasks", labelKey: "nav.tasks", icon: TaskIcon },
+  { href: "/dashboard/projects", labelKey: "sidebar.mobile_pj", icon: ProjectIcon },
+  { href: "/dashboard/settings", labelKey: "nav.settings", icon: SettingsIcon },
 ];
 
 
@@ -45,6 +46,7 @@ export default function Sidebar({ user }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useI18n();
 
   const handleSignOut = async () => {
     try {
@@ -72,7 +74,7 @@ export default function Sidebar({ user }: SidebarProps) {
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="p-1.5 rounded-lg hover:bg-card transition-colors shrink-0"
-            aria-label={isCollapsed ? "サイドバーを開く" : "サイドバーを閉じる"}
+            aria-label={isCollapsed ? t("sidebar.open") : t("sidebar.close")}
           >
             <CollapseIcon collapsed={isCollapsed} />
           </button>
@@ -80,11 +82,12 @@ export default function Sidebar({ user }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-          {navItems.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, labelKey, icon: Icon }) => {
             const isActive =
               href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(href);
+            const label = t(labelKey);
 
             return (
               <Link
@@ -141,10 +144,10 @@ export default function Sidebar({ user }: SidebarProps) {
             className={`flex items-center gap-3 px-3 py-2 mt-1 w-full rounded-lg text-muted hover:bg-card hover:text-foreground transition-colors ${
               isCollapsed ? "justify-center" : ""
             }`}
-            title={isCollapsed ? "サインアウト" : undefined}
+            title={isCollapsed ? t("nav.signout") : undefined}
           >
             <SignOutIcon className="w-5 h-5 shrink-0" />
-            {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap overflow-hidden">サインアウト</span>}
+            {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap overflow-hidden">{t("nav.signout")}</span>}
           </button>
         </div>
       </aside>
@@ -165,7 +168,7 @@ export default function Sidebar({ user }: SidebarProps) {
                 <button
                   onClick={() => setMobileOpen(false)}
                   className="p-1.5 rounded-lg hover:bg-card transition-colors"
-                  aria-label="閉じる"
+                  aria-label={t("common.close")}
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -173,7 +176,7 @@ export default function Sidebar({ user }: SidebarProps) {
                 </button>
               </div>
               <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-                {navItems.map(({ href, label, icon: Icon }) => {
+                {navItems.map(({ href, labelKey, icon: Icon }) => {
                   const isActive = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
                   return (
                     <Link
@@ -185,7 +188,7 @@ export default function Sidebar({ user }: SidebarProps) {
                       }`}
                     >
                       <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-sm font-medium">{label}</span>
+                      <span className="text-sm font-medium">{t(labelKey)}</span>
                     </Link>
                   );
                 })}
@@ -209,7 +212,7 @@ export default function Sidebar({ user }: SidebarProps) {
                   className="flex items-center gap-3 px-3 py-2 mt-1 w-full rounded-lg text-muted hover:bg-card hover:text-foreground transition-colors"
                 >
                   <SignOutIcon className="w-5 h-5 shrink-0" />
-                  <span className="text-sm font-medium">サインアウト</span>
+                  <span className="text-sm font-medium">{t("nav.signout")}</span>
                 </button>
               </div>
             </aside>
@@ -225,9 +228,10 @@ export default function Sidebar({ user }: SidebarProps) {
 /* ---- Mobile Components ---- */
 
 function MobileNav({ pathname }: { pathname: string }) {
+  const { t } = useI18n();
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-border flex justify-around py-1.5 z-30 safe-bottom">
-      {mobileNavItems.map(({ href, label, icon: Icon }) => {
+      {mobileNavItems.map(({ href, labelKey, icon: Icon }) => {
         const isActive =
           href === "/dashboard"
             ? pathname === "/dashboard"
@@ -241,7 +245,7 @@ function MobileNav({ pathname }: { pathname: string }) {
             }`}
           >
             <Icon className="w-5 h-5" />
-            <span className="text-[10px]">{label}</span>
+            <span className="text-[10px]">{t(labelKey)}</span>
           </Link>
         );
       })}

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import KanbanBoard from "@/components/tasks/KanbanBoard";
+import GanttChart from "@/components/tasks/GanttChart";
+import TaskDetailModal from "@/components/tasks/TaskDetailModal";
 import TaskFilters, { defaultFilters, type FilterState } from "@/components/tasks/TaskFilters";
 import dynamic from "next/dynamic";
 import type { TaskCreateFormData } from "@/components/tasks/TaskCreateModal";
@@ -35,6 +37,8 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [viewMode, setViewMode] = useState<"kanban" | "gantt">("kanban");
+  const [ganttSelectedTask, setGanttSelectedTask] = useState<TaskCardData | null>(null);
 
   // Load tasks and members
   useEffect(() => {
@@ -198,9 +202,33 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">タスクボード</h1>
-        <Button onClick={() => setShowCreateModal(true)} size="sm">
-          + タスク追加
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              onClick={() => setViewMode("kanban")}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                viewMode === "kanban"
+                  ? "bg-accent text-white"
+                  : "text-muted hover:bg-card"
+              }`}
+            >
+              カンバン
+            </button>
+            <button
+              onClick={() => setViewMode("gantt")}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                viewMode === "gantt"
+                  ? "bg-accent text-white"
+                  : "text-muted hover:bg-card"
+              }`}
+            >
+              ガント
+            </button>
+          </div>
+          <Button onClick={() => setShowCreateModal(true)} size="sm">
+            + タスク追加
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -210,10 +238,26 @@ export default function TasksPage() {
         assigneeOptions={members}
       />
 
-      {/* Kanban */}
+      {/* Board View */}
       <div className="flex-1 min-h-0">
-        <KanbanBoard tasks={filteredTasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} onUpdate={handleUpdateTask} members={members} />
+        {viewMode === "kanban" ? (
+          <KanbanBoard tasks={filteredTasks} onStatusChange={handleStatusChange} onDelete={handleDeleteTask} onUpdate={handleUpdateTask} members={members} />
+        ) : (
+          <GanttChart tasks={filteredTasks} onTaskClick={(task) => setGanttSelectedTask(task)} />
+        )}
       </div>
+
+      {/* Task detail modal for Gantt view clicks */}
+      {ganttSelectedTask && (
+        <TaskDetailModal
+          task={ganttSelectedTask}
+          onClose={() => setGanttSelectedTask(null)}
+          onStatusChange={handleStatusChange}
+          onDelete={handleDeleteTask}
+          onUpdate={handleUpdateTask}
+          members={members}
+        />
+      )}
 
       <TaskCreateModal
         open={showCreateModal}
