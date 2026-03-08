@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { AnimatePresence } from "framer-motion";
 import type { Notification } from "@/types/database";
 import { subscribeToNotifications } from "@/lib/notifications";
 import NotificationToast from "./NotificationToast";
@@ -98,15 +97,13 @@ export default function ToastProvider({ userId, children }: ToastProviderProps) 
         className="pointer-events-none fixed bottom-4 right-4 z-[9999] flex flex-col-reverse gap-2"
         aria-label="通知"
       >
-        <AnimatePresence mode="popLayout">
-          {toasts.map((toast) => (
-            <NotificationToast
-              key={toast.id}
-              notification={toast}
-              onDismiss={dismissToast}
-            />
-          ))}
-        </AnimatePresence>
+        {toasts.map((toast) => (
+          <NotificationToast
+            key={toast.id}
+            notification={toast}
+            onDismiss={dismissToast}
+          />
+        ))}
       </div>
     </>
   );

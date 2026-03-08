@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import PageTransition from "@/components/ui/PageTransition";
 import { Avatar, Button, Modal } from "@/components/ui";
 import {
@@ -257,8 +257,8 @@ export default function NotesPage() {
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={15}
-                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus-glow resize-y leading-relaxed"
+                rows={8}
+                className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus-glow resize-y leading-relaxed min-h-[44px]"
                 placeholder={"■ 参加者\n- \n\n■ アジェンダ\n- \n\n■ 決定事項\n- \n\n■ アクションアイテム\n- "}
               />
             </div>
@@ -302,13 +302,9 @@ export default function NotesPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          <AnimatePresence>
             {notes.map((note) => (
-              <motion.button
+              <button
                 key={note.id}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
                 onClick={() => openView(note)}
                 className="w-full text-left glass rounded-xl p-4 hover:bg-card/80 transition-colors active:scale-[0.99]"
               >
@@ -337,9 +333,8 @@ export default function NotesPage() {
                   </div>
                   <FileText className="w-5 h-5 text-muted shrink-0 mt-0.5" />
                 </div>
-              </motion.button>
+              </button>
             ))}
-          </AnimatePresence>
         </div>
       )}
     </PageTransition>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { AnimatePresence } from "framer-motion";
+
 import ChannelHeader from "@/components/chat/ChannelHeader";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
@@ -229,27 +229,23 @@ export default function ChannelPage() {
       </div>
 
       {/* Thread panel */}
-      <AnimatePresence>
-        {threadParent && (
-          <ThreadPanel
-            key={threadParent.id}
-            parentMessage={threadParent}
-            channelId={channelId}
-            currentUserId={currentUserId ?? ""}
-            onClose={() => setThreadMessageId(null)}
-          />
-        )}
-      </AnimatePresence>
+      {threadParent && (
+        <ThreadPanel
+          key={threadParent.id}
+          parentMessage={threadParent}
+          channelId={channelId}
+          currentUserId={currentUserId ?? ""}
+          onClose={() => setThreadMessageId(null)}
+        />
+      )}
 
       {/* File list panel */}
-      <AnimatePresence>
-        {showFiles && (
-          <FileListPanel
-            channelId={channelId}
-            onClose={() => setShowFiles(false)}
-          />
-        )}
-      </AnimatePresence>
+      {showFiles && (
+        <FileListPanel
+          channelId={channelId}
+          onClose={() => setShowFiles(false)}
+        />
+      )}
     </div>
   );
 }

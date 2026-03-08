@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui";
 import type { Profile } from "@/types/database";
 
@@ -37,14 +36,10 @@ export default function MentionSuggest({
   if (filtered.length === 0) return null;
 
   return (
-    <motion.div
+    <div
       ref={listRef}
       className="absolute z-50 w-56 max-h-48 overflow-y-auto glass rounded-lg shadow-lg py-1"
       style={position ? { bottom: position.bottom, left: position.left } : { bottom: "100%", left: 0 }}
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 4 }}
-      transition={{ duration: 0.1 }}
     >
       {filtered.map((member, i) => (
         <button
@@ -62,6 +57,6 @@ export default function MentionSuggest({
           <span className="truncate">{member.display_name}</span>
         </button>
       ))}
-    </motion.div>
+    </div>
   );
 }

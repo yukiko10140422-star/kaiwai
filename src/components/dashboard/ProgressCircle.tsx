@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 interface ProgressCircleProps {
   /** 0〜100 の進捗率 */
   value: number;
@@ -39,7 +37,7 @@ export default function ProgressCircle({
           strokeWidth={strokeWidth}
         />
         {/* 進捗円 */}
-        <motion.circle
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -48,9 +46,7 @@ export default function ProgressCircle({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          strokeDashoffset={offset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>

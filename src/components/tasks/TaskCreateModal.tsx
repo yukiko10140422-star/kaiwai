@@ -112,7 +112,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
             onChange={(e) => setTitle(e.target.value)}
             required
             autoFocus
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
             placeholder="タスク名を入力"
           />
         </div>
@@ -127,7 +127,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none min-h-[44px]"
             placeholder="タスクの説明（任意）"
           />
         </div>
@@ -142,7 +142,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
               id="task-status"
               value={status}
               onChange={(e) => setStatus(e.target.value as TaskStatus)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
             >
               {statusOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -158,7 +158,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
               id="task-priority"
               value={priority}
               onChange={(e) => setPriority(e.target.value as TaskPriority)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
             >
               {priorityOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -207,7 +207,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
               id="task-project"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
             >
               <option value="">なし</option>
               {projects.map((p) => (
@@ -224,7 +224,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
               id="task-channel"
               value={channelId}
               onChange={(e) => setChannelId(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
             >
               <option value="">なし</option>
               {channels.map((ch) => (
@@ -244,7 +244,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, members, chan
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
           />
         </div>
 

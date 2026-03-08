@@ -227,7 +227,7 @@ export default function GlobalSearchDialog({
                         <button
                           key={ch.id}
                           onClick={() => goToChannel(ch.id)}
-                          className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-accent/10 transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/10 transition-colors"
                         >
                           <span className="w-6 h-6 rounded flex items-center justify-center text-xs bg-accent/20 text-accent shrink-0">
                             #
@@ -257,7 +257,7 @@ export default function GlobalSearchDialog({
                         <button
                           key={msg.id}
                           onClick={() => goToChannel(msg.channel_id)}
-                          className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-accent/10 transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/10 transition-colors"
                         >
                           <MessageIcon className="w-5 h-5 text-muted shrink-0" />
                           <div className="flex-1 min-w-0">
@@ -287,7 +287,7 @@ export default function GlobalSearchDialog({
                         <button
                           key={task.id}
                           onClick={goToTasks}
-                          className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-accent/10 transition-colors"
+                          className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-accent/10 transition-colors"
                         >
                           <TaskIcon className="w-5 h-5 text-muted shrink-0" />
                           <div className="flex-1 min-w-0">

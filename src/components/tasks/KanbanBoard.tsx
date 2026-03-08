@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui";
-import AnimatedList from "@/components/ui/AnimatedList";
 import TaskCard, { type TaskCardData } from "./TaskCard";
 import TaskDetailModal from "./TaskDetailModal";
 import type { TaskStatus } from "@/types/database";
@@ -73,8 +71,7 @@ export default function KanbanBoard({ tasks, onStatusChange, onDelete }: KanbanB
               </div>
 
               {/* Cards */}
-              <AnimatedList className="flex-1 space-y-3 px-1 overflow-y-auto">
-                <AnimatePresence mode="popLayout">
+              <div className="flex-1 space-y-3 px-1 overflow-y-auto">
                   {columnTasks
                     .sort((a, b) => a.position - b.position)
                     .map((task) => (
@@ -84,7 +81,6 @@ export default function KanbanBoard({ tasks, onStatusChange, onDelete }: KanbanB
                         onClick={setSelectedTask}
                       />
                     ))}
-                </AnimatePresence>
 
                 {/* Empty state */}
                 {columnTasks.length === 0 && (
@@ -92,7 +88,7 @@ export default function KanbanBoard({ tasks, onStatusChange, onDelete }: KanbanB
                     ドラッグしてここに移動
                   </div>
                 )}
-              </AnimatedList>
+              </div>
             </div>
           );
         })}

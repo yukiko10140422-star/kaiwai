@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+
 import { Avatar, Badge } from "@/components/ui";
 import type { Task, TaskStatus, TaskPriority, Label, Profile } from "@/types/database";
 
@@ -45,20 +45,15 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
   const priority = priorityIcon[task.priority];
 
   return (
-    <motion.div
-      layout
-      layoutId={task.id}
+    <div
       draggable
       onDragStart={(e) => {
-        const nativeEvent = e as unknown as { nativeEvent?: DragEvent };
-        nativeEvent.nativeEvent?.dataTransfer?.setData("text/plain", task.id);
+        e.dataTransfer.setData("text/plain", task.id);
       }}
       onClick={() => onClick(task)}
-      className={`glass gradient-border rounded-xl p-4 cursor-pointer select-none transition-all hover:shadow-lg hover:shadow-accent/10 ${
+      className={`glass gradient-border rounded-xl p-4 cursor-pointer select-none transition-all hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-0.5 active:scale-[0.98] ${
         isDragging ? "opacity-50" : ""
       }`}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
     >
       {/* Labels */}
       {task.labels && task.labels.length > 0 && (
@@ -136,7 +131,7 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
           />
         ) : null}
       </div>
-    </motion.div>
+    </div>
   );
 }
 

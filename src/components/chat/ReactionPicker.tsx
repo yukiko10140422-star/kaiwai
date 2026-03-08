@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { QUICK_EMOJIS } from "@/lib/reactions";
 
 interface ReactionPickerProps {
@@ -14,12 +13,8 @@ export default function ReactionPicker({ onSelect, onClose }: ReactionPickerProp
       {/* Backdrop */}
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      <motion.div
+      <div
         className="absolute bottom-full mb-1 right-0 z-50 glass rounded-xl px-2 py-1.5 flex gap-0.5 shadow-lg"
-        initial={{ opacity: 0, scale: 0.9, y: 4 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 4 }}
-        transition={{ duration: 0.1 }}
       >
         {QUICK_EMOJIS.map((emoji) => (
           <button
@@ -34,7 +29,7 @@ export default function ReactionPicker({ onSelect, onClose }: ReactionPickerProp
             {emoji}
           </button>
         ))}
-      </motion.div>
+      </div>
     </>
   );
 }

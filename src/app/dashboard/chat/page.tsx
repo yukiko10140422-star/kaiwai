@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+
 import PageTransition from "@/components/ui/PageTransition";
 import { Avatar } from "@/components/ui";
 import type { Channel, Profile } from "@/types/database";
@@ -152,12 +152,8 @@ export default function ChatListPage() {
               <span className="text-sm">新しいチャンネル</span>
             </button>
 
-            <AnimatePresence>
-              {showCreate && (
-                <motion.form
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
+            {showCreate && (
+                <form
                   className="overflow-hidden"
                   onSubmit={(e) => { e.preventDefault(); handleCreateChannel(); }}
                 >
@@ -174,9 +170,8 @@ export default function ChatListPage() {
                       {creatingChannel ? "作成中..." : "作成"}
                     </button>
                   </div>
-                </motion.form>
+                </form>
               )}
-            </AnimatePresence>
 
             {/* Channel list */}
             {channels.map((ch) => (
@@ -220,14 +215,8 @@ export default function ChatListPage() {
             </button>
 
             {/* New DM member picker */}
-            <AnimatePresence>
-              {showNewDm && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
+            {showNewDm && (
+                <div>
                   <div className="glass rounded-xl p-3 my-2 space-y-1 max-h-48 overflow-y-auto">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-muted">メンバーを選択</span>
@@ -244,9 +233,8 @@ export default function ChatListPage() {
                       </button>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
 
             {/* DM list */}
             {conversations.map((conv) => (

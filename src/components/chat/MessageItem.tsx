@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Avatar } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { parseMessageSegments } from "@/lib/mentions";
@@ -310,6 +309,8 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
   const [showPicker, setShowPicker] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  const isOwn = message.user_id === currentUserId;
+
   // Collect image attachments and their signed URLs for the lightbox
   const imageAttachments = useMemo(
     () => (message.attachments ?? []).filter((a) => a.file_type.startsWith("image/")),
@@ -330,7 +331,6 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
 
   const handleToggle = useCallback(
     async (emoji: string) => {
-      // 楽観的更新
       const existing = reactions.find(
         (r) => r.user_id === currentUserId && r.emoji === emoji
       );
@@ -350,7 +350,6 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
       try {
         await toggleReaction(message.id, currentUserId, emoji);
       } catch {
-        // リバート: サーバーから再取得する代わりに元に戻す
         if (existing) {
           setReactions((prev) => [...prev, existing]);
         } else {
@@ -366,28 +365,24 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
   );
 
   return (
-    <motion.div
-      className="group relative flex gap-2 sm:gap-3 px-3 sm:px-6 py-0.5 hover:bg-card/60 transition-all duration-150"
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15 }}
+    <div
+      className={`group relative flex gap-2 px-3 sm:px-4 py-1 ${isOwn ? "flex-row-reverse" : ""}`}
     >
-      {/* Avatar or time gutter */}
-      <div className="w-10 shrink-0 flex items-start pt-1">
-        {isGrouped ? (
-          <span className="hidden group-hover:block text-[10px] text-muted leading-6">
-            {formatTime(message.created_at)}
-          </span>
-        ) : (
+      {/* Avatar (other's messages only) */}
+      <div className="w-8 shrink-0 flex items-end">
+        {!isOwn && !isGrouped ? (
           <Avatar src={message.author.avatar_url} name={message.author.display_name} size="sm" />
-        )}
+        ) : null}
       </div>
 
-      {/* Content */}
-      <div className="min-w-0 flex-1">
+      {/* Bubble */}
+      <div className={`max-w-[75%] min-w-0 ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
+        {/* Name + time */}
         {!isGrouped && (
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold text-sm">{message.author.display_name}</span>
+          <div className={`flex items-baseline gap-2 mb-0.5 ${isOwn ? "flex-row-reverse" : ""}`}>
+            {!isOwn && (
+              <span className="font-semibold text-xs">{message.author.display_name}</span>
+            )}
             <span className="text-[10px] text-muted">{formatTime(message.created_at)}</span>
             {message.is_edited && (
               <span className="text-[10px] text-muted">(edited)</span>
@@ -395,17 +390,23 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
           </div>
         )}
 
-        <p className="text-sm whitespace-pre-wrap break-words">
+        <div
+          className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${
+            isOwn
+              ? "bg-accent text-white rounded-br-sm"
+              : "bg-card border border-border rounded-bl-sm"
+          }`}
+        >
           {contentSegments.map((seg, i) =>
             seg.type === "mention" ? (
-              <span key={i} className="font-semibold text-accent bg-accent/10 rounded px-0.5">
+              <span key={i} className={`font-semibold rounded px-0.5 ${isOwn ? "text-white/90 bg-white/20" : "text-accent bg-accent/10"}`}>
                 {seg.value}
               </span>
             ) : (
               <span key={i}>{seg.value}</span>
             )
           )}
-        </p>
+        </div>
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
@@ -444,28 +445,26 @@ export default function MessageItem({ message, currentUserId, isGrouped = false,
         )}
       </div>
 
-      {/* Hover/tap action: add reaction */}
-      <div className="absolute right-2 sm:right-4 top-0 flex sm:hidden sm:group-hover:flex items-center">
+      {/* Reaction picker trigger */}
+      <div className={`self-center flex sm:hidden sm:group-hover:flex items-center ${isOwn ? "mr-1" : "ml-1"}`}>
         <div className="relative">
           <button
             onClick={() => setShowPicker((v) => !v)}
-            className="p-1 rounded hover:bg-border/40 transition-colors text-muted hover:text-foreground"
+            className="p-1.5 rounded-full hover:bg-border/40 text-muted hover:text-foreground"
             aria-label="リアクションを追加"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
-          <AnimatePresence>
-            {showPicker && (
-              <ReactionPicker
-                onSelect={handleToggle}
-                onClose={() => setShowPicker(false)}
-              />
-            )}
-          </AnimatePresence>
+          {showPicker && (
+            <ReactionPicker
+              onSelect={handleToggle}
+              onClose={() => setShowPicker(false)}
+            />
+          )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

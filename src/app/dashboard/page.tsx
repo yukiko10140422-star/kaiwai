@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+
 import PageTransition from "@/components/ui/PageTransition";
 import { Avatar } from "@/components/ui";
 import {
@@ -109,11 +109,9 @@ export default function HomePage() {
             <span className="text-sm font-bold text-accent">{completionRate}%</span>
           </div>
           <div className="h-2 rounded-full bg-border overflow-hidden">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-accent-secondary"
-              initial={{ width: 0 }}
-              animate={{ width: `${completionRate}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-accent to-accent-secondary transition-all duration-500"
+              style={{ width: `${completionRate}%` }}
             />
           </div>
         </div>
@@ -256,15 +254,12 @@ function StatCard({
   alert?: boolean;
 }) {
   return (
-    <motion.div
+    <div
       className={`glass rounded-xl p-4 text-center ${alert ? "ring-1 ring-status-overdue/50" : ""}`}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
     >
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
       <p className="text-xs text-muted mt-1">{label}</p>
-    </motion.div>
+    </div>
   );
 }
 

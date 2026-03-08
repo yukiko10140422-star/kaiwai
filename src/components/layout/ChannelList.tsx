@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import AnimatedList, { animatedListItemVariants } from "@/components/ui/AnimatedList";
+
+
 import type { Channel } from "@/types/database";
 import { getChannels, createChannel, deleteChannel, updateReadStatus } from "@/lib/chat";
 import { getChannelUnreadCounts, subscribeToUnread, unsubscribeFromUnread } from "@/lib/unread";
@@ -102,14 +102,8 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
       </div>
 
       {/* Create channel input */}
-      <AnimatePresence>
-        {isCreating && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-2 mb-1 overflow-hidden"
-          >
+      {isCreating && (
+          <div className="px-2 mb-1">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -137,18 +131,17 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
                 追加
               </button>
             </form>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* Channel list */}
-      <AnimatedList className="space-y-0.5">
+      <div className="space-y-0.5">
         {channels.map((ch) => {
           const href = `/dashboard/chat/${ch.id}`;
           const isActive = pathname === href;
 
           return (
-            <motion.div key={ch.id} variants={animatedListItemVariants}>
+            <div key={ch.id}>
               <Link
                 href={href}
                 className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
@@ -174,7 +167,7 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
                   </span>
                 )}
               </Link>
-            </motion.div>
+            </div>
           );
         })}
 
@@ -183,7 +176,7 @@ export default function ChannelList({ isCollapsed }: ChannelListProps) {
             チャンネルがありません
           </p>
         )}
-      </AnimatedList>
+      </div>
     </div>
   );
 }

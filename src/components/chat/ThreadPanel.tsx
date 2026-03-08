@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+
 import MessageItem from "./MessageItem";
 import MessageInput from "./MessageInput";
 import type { MessageWithAuthor } from "./MessageItem";
@@ -89,11 +89,7 @@ export default function ThreadPanel({
   );
 
   return (
-    <motion.div
-      initial={{ x: 360, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 360, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    <div
       className="fixed inset-0 z-40 md:relative md:inset-auto md:z-auto w-full md:w-[360px] h-full border-l border-border bg-sidebar flex flex-col shrink-0"
     >
       {/* Header */}
@@ -150,6 +146,6 @@ export default function ThreadPanel({
         placeholder="返信を入力..."
         hideAttach
       />
-    </motion.div>
+    </div>
   );
 }

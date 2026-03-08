@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 interface ProgressBarProps {
   /** 0〜100 の進捗率 */
   value: number;
@@ -37,14 +35,12 @@ export default function ProgressBar({
         className="w-full rounded-full bg-border/50 overflow-hidden"
         style={{ height }}
       >
-        <motion.div
-          className="h-full rounded-full"
+        <div
+          className="h-full rounded-full transition-all duration-500"
           style={{
             background: "linear-gradient(90deg, var(--accent), var(--color-status-done))",
+            width: `${clampedValue}%`,
           }}
-          initial={{ width: 0 }}
-          animate={{ width: `${clampedValue}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
         />
       </div>
     </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Avatar } from "@/components/ui";
 import type { SearchResult } from "@/lib/search";
 
@@ -38,13 +37,8 @@ export default function SearchResults({ results, query, isLoading }: SearchResul
       <p className="px-4 py-2 text-xs text-muted">
         {results.length}件の結果
       </p>
-      {results.map((result, i) => (
-        <motion.div
-          key={result.id}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.03 }}
-        >
+      {results.map((result) => (
+        <div key={result.id}>
           <Link
             href={`/dashboard/chat/${result.channel_id}`}
             className="flex gap-3 px-4 py-3 hover:bg-card/60 transition-colors"
@@ -75,7 +69,7 @@ export default function SearchResults({ results, query, isLoading }: SearchResul
               </p>
             </div>
           </Link>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

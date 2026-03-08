@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 
 interface CalendarTask {
   id: string;
@@ -175,13 +175,8 @@ export default function CalendarView({ tasks, className = "", onTaskClick }: Cal
       </div>
 
       {/* 選択日のタスク一覧パネル */}
-      <AnimatePresence>
-        {selectedDate && selectedTasks.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
+      {selectedDate && selectedTasks.length > 0 && (
+          <div
             className="mt-3 rounded-xl bg-card/80 backdrop-blur border border-border/50 p-3"
           >
             <p className="text-xs text-muted mb-2">
@@ -204,9 +199,8 @@ export default function CalendarView({ tasks, className = "", onTaskClick }: Cal
                 </button>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

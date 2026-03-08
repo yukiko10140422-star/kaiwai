@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 type ToastType = "info" | "success" | "error";
 
@@ -26,28 +25,22 @@ export default function Toast({ open, onClose, message, type = "info", duration 
     return () => clearTimeout(timer);
   }, [open, onClose, duration]);
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className={`fixed bottom-6 right-6 z-50 glass rounded-xl px-5 py-3 border-l-4 ${typeStyles[type]} shadow-lg max-w-sm`}
-          initial={{ opacity: 0, y: 20, x: 20 }}
-          animate={{ opacity: 1, y: 0, x: 0 }}
-          exit={{ opacity: 0, y: 20, x: 20 }}
-          transition={{ duration: 0.2 }}
+    <div
+      className={`fixed bottom-6 right-6 z-50 glass rounded-xl px-5 py-3 border-l-4 ${typeStyles[type]} shadow-lg max-w-sm`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm">{message}</p>
+        <button
+          onClick={onClose}
+          className="text-muted hover:text-foreground transition-colors text-lg leading-none shrink-0"
+          aria-label="Close"
         >
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm">{message}</p>
-            <button
-              onClick={onClose}
-              className="text-muted hover:text-foreground transition-colors text-lg leading-none shrink-0"
-              aria-label="Close"
-            >
-              &times;
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          &times;
+        </button>
+      </div>
+    </div>
   );
 }

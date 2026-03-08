@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 interface StatCardProps {
   title: string;
   value: number | string;
@@ -21,12 +19,9 @@ export default function StatCard({
   className = "",
 }: StatCardProps) {
   return (
-    <motion.div
+    <div
       className={`glass rounded-2xl p-5 border-l-4 ${className}`}
       style={{ borderLeftColor: accentColor }}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
     >
       <div className="flex items-start justify-between">
         <div>
@@ -38,6 +33,6 @@ export default function StatCard({
         </div>
         <div className="text-muted text-2xl">{icon}</div>
       </div>
-    </motion.div>
+    </div>
   );
 }

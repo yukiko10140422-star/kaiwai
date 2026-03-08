@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, type ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   open: boolean;
@@ -68,46 +67,37 @@ export default function Modal({ open, onClose, title, children, className = "" }
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, handleKeyDown]);
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          ref={overlayRef}
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/50 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={(e) => {
-            if (e.target === overlayRef.current) onClose();
-          }}
-        >
-          <motion.div
-            ref={modalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={title ? "modal-title" : undefined}
-            className={`glass rounded-2xl p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto ${className}`}
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.15 }}
-          >
-            {title && (
-              <div className="flex items-center justify-between mb-4">
-                <h2 id="modal-title" className="text-lg font-bold">{title}</h2>
-                <button
-                  onClick={onClose}
-                  className="text-muted hover:text-foreground transition-colors text-xl leading-none"
-                  aria-label="Close"
-                >
-                  &times;
-                </button>
-              </div>
-            )}
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/50 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === overlayRef.current) onClose();
+      }}
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? "modal-title" : undefined}
+        className={`glass rounded-2xl p-6 w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto ${className}`}
+      >
+        {title && (
+          <div className="flex items-center justify-between mb-4">
+            <h2 id="modal-title" className="text-lg font-bold">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-muted hover:text-foreground transition-colors text-xl leading-none"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+        {children}
+      </div>
+    </div>
   );
 }

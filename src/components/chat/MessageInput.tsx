@@ -245,7 +245,7 @@ export default function MessageInput({
                 )}
                 <button
                   onClick={() => removeFile(i)}
-                  className="absolute -top-1 -right-1 bg-status-overdue text-white rounded-full w-5 h-5 sm:w-4 sm:h-4 text-[10px] flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1 -right-1 bg-status-overdue text-white rounded-full w-6 h-6 sm:w-4 sm:h-4 text-[10px] flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   aria-label="Remove file"
                 >
                   &times;
@@ -276,7 +276,7 @@ export default function MessageInput({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="shrink-0 rounded-lg p-2 text-muted hover:text-foreground hover:bg-card transition-colors"
+              className="shrink-0 rounded-lg p-3 text-muted hover:text-foreground hover:bg-card transition-colors"
               aria-label="Attach file"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -307,6 +307,7 @@ export default function MessageInput({
             // Delay close to allow MentionSuggest mousedown
             setTimeout(() => closeMention(), 200);
           }}
+          inputMode="text"
           placeholder={placeholder}
           disabled={disabled}
           rows={1}
@@ -317,7 +318,7 @@ export default function MessageInput({
         <button
           type="submit"
           disabled={disabled || (!text.trim() && files.length === 0)}
-          className="shrink-0 rounded-lg bg-accent p-2.5 text-white transition-colors hover:bg-accent-hover disabled:opacity-50 disabled:pointer-events-none"
+          className="shrink-0 rounded-lg bg-accent p-3 text-white transition-colors hover:bg-accent-hover disabled:opacity-50 disabled:pointer-events-none"
           aria-label="Send message"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { Avatar } from "@/components/ui";
 import type { Profile } from "@/types/database";
 import {
@@ -118,14 +118,8 @@ export default function DmList({ isCollapsed }: DmListProps) {
       </div>
 
       {/* New DM member selector */}
-      <AnimatePresence>
-        {showNewDm && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-2 mb-1 overflow-hidden"
-          >
+      {showNewDm && (
+          <div className="px-2 mb-1">
             <div className="border border-border rounded-lg p-2 space-y-1 max-h-40 overflow-y-auto">
               {loadingMembers ? (
                 <p className="text-xs text-muted py-1">読み込み中…</p>
@@ -144,9 +138,8 @@ export default function DmList({ isCollapsed }: DmListProps) {
                 ))
               )}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* DM conversation list */}
       <div className="space-y-0.5">

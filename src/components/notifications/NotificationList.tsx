@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   AtSign,
   ClipboardList,
@@ -47,12 +46,8 @@ export default function NotificationList({
   }
 
   return (
-    <motion.div
+    <div
       className="absolute right-0 top-full mt-2 w-80 sm:w-96 glass rounded-2xl shadow-xl z-50 overflow-hidden"
-      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-      transition={{ duration: 0.15 }}
     >
       {/* ヘッダー */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
@@ -121,6 +116,6 @@ export default function NotificationList({
           ))
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -110,6 +110,13 @@ body {
   }
 }
 
+/* Mobile: ensure minimum touch target size */
+@media screen and (max-width: 768px) {
+  button, [role="button"] {
+    min-height: 36px;
+  }
+}
+
 /* Smooth touch scrolling */
 main, [class*="overflow-y-auto"] {
   -webkit-overflow-scrolling: touch;

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   AtSign,
   ClipboardList,
@@ -33,12 +32,7 @@ export default function NotificationToast({
   const IconComponent = iconMap[notification.type] ?? Bell;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+    <div
       onClick={() => onDismiss(notification.id)}
       className="pointer-events-auto w-80 cursor-pointer rounded-xl border border-border/50 p-4 shadow-lg backdrop-blur-xl"
       style={{
@@ -76,6 +70,6 @@ export default function NotificationToast({
           &times;
         </span>
       </div>
-    </motion.div>
+    </div>
   );
 }
