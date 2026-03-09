@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.11.3";
+const CURRENT_VERSION = "1.11.4";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,20 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.11.4",
+    date: "2026-03-10",
+    title: "ライブラリ: Adobe風プレビュービューワー",
+    items: [
+      { type: "new", text: "ホイールズームがCtrl不要になり、直感的にズームできるようになりました" },
+      { type: "new", text: "ズーム後にドラッグで画像をパン（移動）できるようになりました" },
+      { type: "new", text: "モバイルでピンチズーム・ドラッグ移動に対応しました" },
+      { type: "new", text: "ダブルクリック/タップで1x⇔2xズームトグルができるようになりました" },
+      { type: "new", text: "Adobe風フローティングツールバー（自動フェードイン/アウト）を追加" },
+      { type: "new", text: "「幅に合わせる」「全体表示」フィットプリセットを追加" },
+      { type: "improve", text: "PDFのページナビゲーションがフローティングツールバーに統合されました" },
+    ],
+  },
   {
     version: "1.11.3",
     date: "2026-03-10",

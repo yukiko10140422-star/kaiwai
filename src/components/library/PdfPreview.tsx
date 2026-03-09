@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -11,17 +11,42 @@ interface PdfPreviewProps {
   url: string;
   fileName: string;
   scale?: number;
+  containerWidth?: number;
+  // Page control from parent (ViewerToolbar)
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onLoadInfo?: (info: { numPages: number }) => void;
 }
 
-export default function PdfPreview({ url, fileName, scale = 1 }: PdfPreviewProps) {
+export default function PdfPreview({
+  url,
+  fileName,
+  scale = 1,
+  containerWidth,
+  currentPage: externalPage,
+  onPageChange,
+  onLoadInfo,
+}: PdfPreviewProps) {
   const [numPages, setNumPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalPage, setInternalPage] = useState(1);
   const [loadError, setLoadError] = useState(false);
 
-  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-    setCurrentPage(1);
-  }, []);
+  const currentPage = externalPage ?? internalPage;
+  const setCurrentPage = onPageChange ?? setInternalPage;
+
+  const onDocumentLoadSuccess = useCallback(
+    ({ numPages }: { numPages: number }) => {
+      setNumPages(numPages);
+      setCurrentPage(1);
+      onLoadInfo?.({ numPages });
+    },
+    [setCurrentPage, onLoadInfo]
+  );
+
+  // Reset page when URL changes
+  useEffect(() => {
+    setInternalPage(1);
+  }, [url]);
 
   if (loadError) {
     return (
@@ -37,35 +62,11 @@ export default function PdfPreview({ url, fileName, scale = 1 }: PdfPreviewProps
     );
   }
 
-  return (
-    <div className="flex flex-col items-center gap-3 max-h-[80vh] overflow-hidden">
-      {/* Page navigation */}
-      {numPages > 1 && (
-        <div className="flex items-center gap-3 text-white/80 text-sm shrink-0">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage <= 1}
-            className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-            </svg>
-          </button>
-          <span>{currentPage} / {numPages}</span>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
-            disabled={currentPage >= numPages}
-            className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          </button>
-        </div>
-      )}
+  const pageWidth = containerWidth ? containerWidth * scale : 600 * scale;
 
-      {/* PDF Document */}
-      <div className="overflow-auto max-h-[72vh] rounded-lg">
+  return (
+    <div className="flex flex-col items-center max-h-[80vh] overflow-hidden">
+      <div className="overflow-hidden rounded-lg">
         <Document
           file={url}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -78,7 +79,7 @@ export default function PdfPreview({ url, fileName, scale = 1 }: PdfPreviewProps
         >
           <Page
             pageNumber={currentPage}
-            width={600 * scale}
+            width={pageWidth}
             renderTextLayer={true}
             renderAnnotationLayer={true}
           />
