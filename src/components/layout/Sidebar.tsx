@@ -34,7 +34,7 @@ const navItems = [
 
 // Mobile bottom nav: only show key tabs
 const mobileNavItems = [
-  { href: "/dashboard", labelKey: "nav.home", icon: HomeIcon },
+  { href: "/dashboard/library", labelKey: "nav.library", icon: LibraryIcon },
   { href: "/dashboard/chat", labelKey: "nav.chat", icon: ChatIcon },
   { href: "/dashboard/tasks", labelKey: "nav.tasks", icon: TaskIcon },
   { href: "/dashboard/projects", labelKey: "sidebar.mobile_pj", icon: ProjectIcon },
