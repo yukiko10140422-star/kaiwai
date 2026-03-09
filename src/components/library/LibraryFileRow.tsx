@@ -14,6 +14,15 @@ export default function LibraryFileRow({ file, onClick }: LibraryFileRowProps) {
     <div
       className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card/50 cursor-pointer transition-colors group"
       onClick={onClick}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("application/json", JSON.stringify({ type: "file", id: file.id }));
+        e.dataTransfer.effectAllowed = "move";
+        (e.currentTarget as HTMLElement).style.opacity = "0.5";
+      }}
+      onDragEnd={(e) => {
+        (e.currentTarget as HTMLElement).style.opacity = "1";
+      }}
     >
       <FileIcon fileType={file.file_type} className="w-5 h-5" />
       <div className="min-w-0 flex-1">

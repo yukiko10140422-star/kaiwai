@@ -9,9 +9,13 @@ interface FolderCardProps {
   onRename: (newName: string) => void;
   onDelete: () => void;
   onMove: () => void;
+  isDragOver?: boolean;
+  onDropOnFolder?: (e: React.DragEvent) => void;
+  onDragOverFolder?: (e: React.DragEvent) => void;
+  onDragLeaveFolder?: (e: React.DragEvent) => void;
 }
 
-export default function FolderCard({ folder, onClick, onRename, onDelete, onMove }: FolderCardProps) {
+export default function FolderCard({ folder, onClick, onRename, onDelete, onMove, isDragOver, onDropOnFolder, onDragOverFolder, onDragLeaveFolder }: FolderCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [renameName, setRenameName] = useState(folder.name);
@@ -39,8 +43,16 @@ export default function FolderCard({ folder, onClick, onRename, onDelete, onMove
 
   return (
     <div
-      className="glass rounded-xl p-4 cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group relative"
+      className={`glass rounded-xl p-4 cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group relative ${isDragOver ? "ring-2 ring-accent bg-accent/10" : ""}`}
       onClick={renaming ? undefined : onClick}
+      draggable={!renaming}
+      onDragStart={(e) => {
+        e.dataTransfer.setData("application/json", JSON.stringify({ type: "folder", id: folder.id }));
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onDrop={onDropOnFolder}
+      onDragOver={onDragOverFolder}
+      onDragLeave={onDragLeaveFolder}
     >
       <div className="flex items-center gap-3">
         <svg className="w-10 h-10 text-accent/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

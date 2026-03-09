@@ -27,6 +27,15 @@ export default function LibraryFileCard({ file, onClick }: LibraryFileCardProps)
     <div
       className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group"
       onClick={onClick}
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("application/json", JSON.stringify({ type: "file", id: file.id }));
+        e.dataTransfer.effectAllowed = "move";
+        (e.currentTarget as HTMLElement).style.opacity = "0.5";
+      }}
+      onDragEnd={(e) => {
+        (e.currentTarget as HTMLElement).style.opacity = "1";
+      }}
     >
       {/* Thumbnail area */}
       <div className="h-32 bg-card/50 flex items-center justify-center overflow-hidden">

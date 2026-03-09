@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.10.2";
+const CURRENT_VERSION = "1.11.0";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,17 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.11.0",
+    date: "2026-03-10",
+    title: "ライブラリ: ドラッグ&ドロップ移動 + ファイルプレビュー",
+    items: [
+      { type: "new", text: "ファイル/フォルダをドラッグ&ドロップで別のフォルダに移動できるようになりました" },
+      { type: "new", text: "パンくずリストへのドロップで親フォルダやルートへの移動が可能に" },
+      { type: "new", text: "ファイルクリックでクイックプレビュー表示（画像/PDF/動画/音声対応）" },
+      { type: "new", text: "プレビューモーダルで左右矢印キーによるファイル間ナビゲーション" },
+    ],
+  },
   {
     version: "1.10.2",
     date: "2026-03-10",

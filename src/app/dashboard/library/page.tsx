@@ -11,6 +11,7 @@ import LibraryBreadcrumbs from "@/components/library/LibraryBreadcrumbs";
 import FileUploadZone from "@/components/library/FileUploadZone";
 import FolderCreateModal from "@/components/library/FolderCreateModal";
 import FileDetailModal from "@/components/library/FileDetailModal";
+import FilePreviewModal from "@/components/library/FilePreviewModal";
 import { fetchProjectsWithStats } from "@/lib/projects";
 import { showToast } from "@/lib/toast";
 import {
@@ -20,6 +21,7 @@ import {
   renameFolder,
   deleteFolder,
   moveFolder,
+  moveLibraryFile,
   getFolderBreadcrumbs,
   uploadLibraryFile,
   deleteLibraryFile,
@@ -53,12 +55,18 @@ export default function LibraryPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Selected file (for future FileDetailModal)
+  // Selected file (for FileDetailModal)
   const [selectedFile, setSelectedFile] = useState<LibraryFileWithProfile | null>(null);
+
+  // Preview file (for FilePreviewModal)
+  const [previewFile, setPreviewFile] = useState<LibraryFileWithProfile | null>(null);
 
   // Upload state
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // DnD state
+  const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
 
   // Debounce ref for search
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -87,41 +95,37 @@ export default function LibraryPage() {
   }, [searchQuery]);
 
   // Load folders, files, breadcrumbs when deps change
+  const refreshData = useCallback(async () => {
+    try {
+      const [foldersData, filesData, crumbs] = await Promise.all([
+        debouncedSearch
+          ? Promise.resolve([])
+          : fetchFolders(currentFolderId, projectFilter),
+        fetchLibraryFiles({
+          folderId: currentFolderId,
+          projectId: projectFilter,
+          search: debouncedSearch || undefined,
+          fileType,
+        }),
+        getFolderBreadcrumbs(currentFolderId),
+      ]);
+      setFolders(foldersData);
+      setFiles(filesData);
+      setBreadcrumbs(crumbs);
+    } catch (err) {
+      console.error("Failed to load library data:", err);
+      showToast("データの読み込みに失敗しました", "error");
+    }
+  }, [currentFolderId, debouncedSearch, fileType, projectFilter]);
+
   useEffect(() => {
     let cancelled = false;
-
-    async function load() {
-      setLoading(true);
-      try {
-        const [foldersData, filesData, crumbs] = await Promise.all([
-          debouncedSearch
-            ? Promise.resolve([]) // hide folders when searching
-            : fetchFolders(currentFolderId, projectFilter),
-          fetchLibraryFiles({
-            folderId: currentFolderId,
-            projectId: projectFilter,
-            search: debouncedSearch || undefined,
-            fileType,
-          }),
-          getFolderBreadcrumbs(currentFolderId),
-        ]);
-        if (cancelled) return;
-        setFolders(foldersData);
-        setFiles(filesData);
-        setBreadcrumbs(crumbs);
-      } catch (err) {
-        console.error("Failed to load library data:", err);
-        if (!cancelled) showToast("データの読み込みに失敗しました", "error");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [currentFolderId, debouncedSearch, fileType, projectFilter]);
+    setLoading(true);
+    refreshData().finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [refreshData]);
 
   // Load projects on mount
   useEffect(() => {
@@ -157,15 +161,7 @@ export default function LibraryPage() {
           "success",
         );
         setShowUploadZone(false);
-
-        // Refresh files
-        const refreshed = await fetchLibraryFiles({
-          folderId: currentFolderId,
-          projectId: projectFilter,
-          search: debouncedSearch || undefined,
-          fileType,
-        });
-        setFiles(refreshed);
+        await refreshData();
       } catch (err) {
         console.error("Upload failed:", err);
         const msg = err instanceof Error ? err.message : "アップロードに失敗しました";
@@ -175,7 +171,7 @@ export default function LibraryPage() {
         setUploadProgress(0);
       }
     },
-    [currentUserId, currentFolderId, projectFilter, debouncedSearch, fileType],
+    [currentUserId, currentFolderId, projectFilter, refreshData],
   );
 
   const handleCreateFolder = useCallback(
@@ -225,31 +221,64 @@ export default function LibraryPage() {
     [currentFolderId, projectFilter],
   );
 
-  const handleMoveFolder = useCallback((folderId: string) => {
-    // TODO: Implement folder move modal
-    console.log("Move folder:", folderId);
-  }, []);
-
   const handleDeleteFile = useCallback(
     async (fileId: string) => {
       if (!confirm("このファイルを削除しますか？")) return;
       try {
         await deleteLibraryFile(fileId);
         showToast("ファイルを削除しました", "success");
-        const refreshed = await fetchLibraryFiles({
-          folderId: currentFolderId,
-          projectId: projectFilter,
-          search: debouncedSearch || undefined,
-          fileType,
-        });
-        setFiles(refreshed);
+        await refreshData();
       } catch (err) {
         console.error("File deletion failed:", err);
         showToast("ファイルの削除に失敗しました", "error");
       }
     },
-    [currentFolderId, projectFilter, debouncedSearch, fileType],
+    [refreshData],
   );
+
+  // ---- DnD Handlers ----
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent, targetFolderId: string | null) => {
+      e.preventDefault();
+      setDragOverFolderId(null);
+
+      let payload: { type: string; id: string };
+      try {
+        payload = JSON.parse(e.dataTransfer.getData("application/json"));
+      } catch {
+        return;
+      }
+
+      // Guard: don't drop folder onto itself
+      if (payload.type === "folder" && payload.id === targetFolderId) return;
+
+      try {
+        if (payload.type === "file") {
+          await moveLibraryFile(payload.id, targetFolderId);
+          showToast("ファイルを移動しました", "success");
+        } else if (payload.type === "folder") {
+          await moveFolder(payload.id, targetFolderId);
+          showToast("フォルダを移動しました", "success");
+        }
+        await refreshData();
+      } catch (err) {
+        console.error("Move failed:", err);
+        showToast("移動に失敗しました", "error");
+      }
+    },
+    [refreshData],
+  );
+
+  const handleDragOverFolder = useCallback((e: React.DragEvent, folderId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverFolderId(folderId);
+  }, []);
+
+  const handleDragLeaveFolder = useCallback(() => {
+    setDragOverFolderId(null);
+  }, []);
 
   // ---- Render ----
 
@@ -266,6 +295,7 @@ export default function LibraryPage() {
         <LibraryBreadcrumbs
           items={breadcrumbs}
           onNavigate={(folderId) => setCurrentFolderId(folderId)}
+          onDropOnBreadcrumb={(folderId, e) => handleDrop(e, folderId)}
         />
 
         {/* Toolbar */}
@@ -342,7 +372,13 @@ export default function LibraryPage() {
                         handleRenameFolder(folder.id, newName)
                       }
                       onDelete={() => handleDeleteFolder(folder.id)}
-                      onMove={() => handleMoveFolder(folder.id)}
+                      onMove={() => {
+                        // Move to parent via DnD instead
+                      }}
+                      isDragOver={dragOverFolderId === folder.id}
+                      onDropOnFolder={(e) => handleDrop(e, folder.id)}
+                      onDragOverFolder={(e) => handleDragOverFolder(e, folder.id)}
+                      onDragLeaveFolder={handleDragLeaveFolder}
                     />
                   ))}
                 </div>
@@ -361,7 +397,7 @@ export default function LibraryPage() {
                       <LibraryFileCard
                         key={file.id}
                         file={file}
-                        onClick={() => setSelectedFile(file)}
+                        onClick={() => setPreviewFile(file)}
                       />
                     ))}
                   </div>
@@ -371,7 +407,7 @@ export default function LibraryPage() {
                       <LibraryFileRow
                         key={file.id}
                         file={file}
-                        onClick={() => setSelectedFile(file)}
+                        onClick={() => setPreviewFile(file)}
                       />
                     ))}
                   </div>
@@ -388,18 +424,24 @@ export default function LibraryPage() {
           onCreate={handleCreateFolder}
         />
 
+        {/* File Preview Modal */}
+        <FilePreviewModal
+          file={previewFile}
+          files={files}
+          onClose={() => setPreviewFile(null)}
+          onOpenDetail={(file) => {
+            setPreviewFile(null);
+            setSelectedFile(file);
+          }}
+        />
+
         {/* File Detail Modal */}
         <FileDetailModal
           file={selectedFile}
           onClose={() => setSelectedFile(null)}
           onDeleted={() => {
             setSelectedFile(null);
-            fetchLibraryFiles({
-              folderId: currentFolderId,
-              projectId: projectFilter,
-              search: debouncedSearch || undefined,
-              fileType,
-            }).then(setFiles).catch(console.error);
+            refreshData();
           }}
         />
       </div>
