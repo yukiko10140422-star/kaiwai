@@ -177,7 +177,7 @@ export async function uploadLibraryFile(
   const supabase = createClient();
 
   // Sanitize file name
-  const safeName = file.name.replace(/[^\w.\-()（）\u3000-\u9FFF\uF900-\uFAFF]/g, "_");
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const storagePath = `library/${userId}/${Date.now()}_${safeName}`;
 
   const { error: uploadError } = await supabase.storage
@@ -285,7 +285,7 @@ export async function uploadNewVersion(originalFileId: string, file: File, userI
     throw new Error(`ファイルサイズが上限(50MB)を超えています: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
   }
 
-  const safeName = file.name.replace(/[^\w.\-()（）\u3000-\u9FFF\uF900-\uFAFF]/g, "_");
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const storagePath = `library/${userId}/${Date.now()}_v${nextVersion}_${safeName}`;
 
   const { error: uploadError } = await supabase.storage

@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.10.1";
+const CURRENT_VERSION = "1.10.2";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,14 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.10.2",
+    date: "2026-03-10",
+    title: "ライブラリアップロード修正",
+    items: [
+      { type: "fix", text: "日本語ファイル名のPDFアップロード時に「INVALID KEY」エラーが発生する問題を修正しました" },
+    ],
+  },
   {
     version: "1.10.1",
     date: "2026-03-10",
