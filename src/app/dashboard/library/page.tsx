@@ -241,12 +241,15 @@ export default function LibraryPage() {
   const handleDrop = useCallback(
     async (e: React.DragEvent, targetFolderId: string | null) => {
       e.preventDefault();
+      e.stopPropagation();
       setDragOverFolderId(null);
 
       let payload: { type: string; id: string };
       try {
-        payload = JSON.parse(e.dataTransfer.getData("application/json"));
-      } catch {
+        const raw = e.dataTransfer.getData("application/json") || e.dataTransfer.getData("text/plain");
+        payload = JSON.parse(raw);
+      } catch (parseErr) {
+        console.error("DnD payload parse failed:", parseErr);
         return;
       }
 

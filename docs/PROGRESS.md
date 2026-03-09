@@ -501,3 +501,25 @@ Phase 5: ポリッシュ（継続中）
 - `src/components/library/FolderCard.tsx` - ドラッグ中/ドロップ先ビジュアルフィードバック改善
 - `src/components/ui/WhatsNewModal.tsx` - v1.11.1 changelog
 - `next.config.ts` - react-pdf 用 canvas alias 追加
+
+### セッション: 2026-03-10 (v1.11.2) — ライブラリ DnD移動修正 + フォルダ削除改善
+
+**問題:**
+- DnD でファイル/フォルダの移動がサイレントに失敗（RLS ポリシーが `created_by = auth.uid()` で他メンバーのアイテムを UPDATE/DELETE できない）
+- フォルダ削除時に中のファイル（ストレージ含む）が適切に削除されない（DB レコードだけ削除、FK が ON DELETE SET NULL）
+- DnD イベントバブリングで意図しないドロップ先にアイテムが移動する可能性
+
+**修正:**
+- `deleteFolder()` を再実装: 再帰的にフォルダツリー内の全ファイルを収集し、ストレージ削除 → DB削除 → フォルダ削除
+- `moveLibraryFile()` / `moveFolder()` に `.select().single()` をチェーンして 0 rows affected 検出
+- DnD イベントハンドラに `stopPropagation()` + `text/plain` フォールバック MIME タイプ追加
+- RLS ポリシー緩和 SQL を提供（Supabase SQL Editor で手動実行が必要）
+
+**変更ファイル:**
+- `src/lib/library.ts` - deleteFolder 再実装、move 関数にエラー検出追加
+- `src/app/dashboard/library/page.tsx` - handleDrop に stopPropagation + fallback
+- `src/components/library/FolderCard.tsx` - stopPropagation + text/plain fallback
+- `src/components/library/LibraryFileCard.tsx` - text/plain fallback
+- `src/components/library/LibraryFileRow.tsx` - text/plain fallback
+- `src/components/library/LibraryBreadcrumbs.tsx` - stopPropagation
+- `src/components/ui/WhatsNewModal.tsx` - v1.11.2 changelog

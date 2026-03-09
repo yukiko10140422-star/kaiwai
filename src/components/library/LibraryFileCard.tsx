@@ -30,7 +30,9 @@ export default function LibraryFileCard({ file, onClick }: LibraryFileCardProps)
       onClick={onClick}
       draggable
       onDragStart={(e) => {
-        e.dataTransfer.setData("application/json", JSON.stringify({ type: "file", id: file.id }));
+        const json = JSON.stringify({ type: "file", id: file.id });
+        e.dataTransfer.setData("application/json", json);
+        e.dataTransfer.setData("text/plain", json);
         e.dataTransfer.effectAllowed = "move";
         setIsDragging(true);
       }}

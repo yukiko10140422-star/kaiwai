@@ -49,12 +49,14 @@ export default function FolderCard({ folder, onClick, onRename, onDelete, onMove
       onClick={renaming ? undefined : onClick}
       draggable={!renaming}
       onDragStart={(e) => {
-        e.dataTransfer.setData("application/json", JSON.stringify({ type: "folder", id: folder.id }));
+        const json = JSON.stringify({ type: "folder", id: folder.id });
+        e.dataTransfer.setData("application/json", json);
+        e.dataTransfer.setData("text/plain", json);
         e.dataTransfer.effectAllowed = "move";
         setIsDragging(true);
       }}
       onDragEnd={() => setIsDragging(false)}
-      onDrop={onDropOnFolder}
+      onDrop={(e) => { e.stopPropagation(); onDropOnFolder?.(e); }}
       onDragOver={onDragOverFolder}
       onDragLeave={onDragLeaveFolder}
     >

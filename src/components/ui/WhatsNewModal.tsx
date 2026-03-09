@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.11.1";
+const CURRENT_VERSION = "1.11.2";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,16 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.11.2",
+    date: "2026-03-10",
+    title: "ライブラリ: DnD移動修正 + フォルダ削除改善",
+    items: [
+      { type: "fix", text: "ドラッグ&ドロップによるファイル/フォルダ移動が正しく動作しない問題を修正" },
+      { type: "fix", text: "フォルダ削除時に中のファイル（ストレージ含む）が適切に削除されるように改善" },
+      { type: "improve", text: "移動操作のエラー検出を強化（RLSブロック時のサイレント失敗を防止）" },
+    ],
+  },
   {
     version: "1.11.1",
     date: "2026-03-10",

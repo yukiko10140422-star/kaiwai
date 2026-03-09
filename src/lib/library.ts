@@ -65,6 +65,57 @@ export async function renameFolder(folderId: string, newName: string) {
 
 export async function deleteFolder(folderId: string) {
   const supabase = createClient();
+
+  // 再帰的にフォルダツリー内の全ファイルを収集
+  const allFiles: { id: string; storage_path: string }[] = [];
+
+  async function collectFiles(parentFolderId: string) {
+    // このフォルダ直下のファイル（バージョンファイル含む）
+    const { data: files } = await supabase
+      .from("library_files")
+      .select("id, storage_path")
+      .eq("folder_id", parentFolderId);
+
+    if (files) {
+      for (const f of files) {
+        allFiles.push(f);
+        // バージョンファイルも収集
+        const { data: versions } = await supabase
+          .from("library_files")
+          .select("id, storage_path")
+          .eq("parent_file_id", f.id);
+        if (versions) allFiles.push(...versions);
+      }
+    }
+
+    // サブフォルダを再帰
+    const { data: subFolders } = await supabase
+      .from("library_folders")
+      .select("id")
+      .eq("parent_id", parentFolderId);
+
+    if (subFolders) {
+      for (const sub of subFolders) {
+        await collectFiles(sub.id);
+      }
+    }
+  }
+
+  await collectFiles(folderId);
+
+  // ストレージからファイルをバッチ削除
+  if (allFiles.length > 0) {
+    const paths = allFiles.map((f) => f.storage_path);
+    await supabase.storage.from("attachments").remove(paths);
+
+    // DB からファイルレコードを削除
+    const ids = allFiles.map((f) => f.id);
+    for (const id of ids) {
+      await supabase.from("library_files").delete().eq("id", id);
+    }
+  }
+
+  // フォルダを削除（サブフォルダは ON DELETE CASCADE で自動削除）
   const { error } = await supabase
     .from("library_folders")
     .delete()
@@ -74,11 +125,14 @@ export async function deleteFolder(folderId: string) {
 
 export async function moveFolder(folderId: string, newParentId: string | null) {
   const supabase = createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("library_folders")
     .update({ parent_id: newParentId, updated_at: new Date().toISOString() })
-    .eq("id", folderId);
+    .eq("id", folderId)
+    .select()
+    .single();
   if (error) throw error;
+  if (!data) throw new Error("フォルダの移動に失敗しました");
 }
 
 export async function getFolderBreadcrumbs(folderId: string | null): Promise<BreadcrumbItem[]> {
@@ -242,11 +296,14 @@ export async function deleteLibraryFile(fileId: string) {
 
 export async function moveLibraryFile(fileId: string, newFolderId: string | null) {
   const supabase = createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("library_files")
     .update({ folder_id: newFolderId, updated_at: new Date().toISOString() })
-    .eq("id", fileId);
+    .eq("id", fileId)
+    .select()
+    .single();
   if (error) throw error;
+  if (!data) throw new Error("ファイルの移動に失敗しました");
 }
 
 export async function getLibraryFileSignedUrl(storagePath: string) {

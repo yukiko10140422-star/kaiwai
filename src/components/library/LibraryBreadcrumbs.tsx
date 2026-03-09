@@ -35,6 +35,7 @@ export default function LibraryBreadcrumbs({ items, onNavigate, onDropOnBreadcru
                 onDragLeave={() => setDragOverId(undefined)}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setDragOverId(undefined);
                   onDropOnBreadcrumb?.(item.id, e);
                 }}
@@ -53,6 +54,7 @@ export default function LibraryBreadcrumbs({ items, onNavigate, onDropOnBreadcru
                 onDragLeave={() => setDragOverId(undefined)}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setDragOverId(undefined);
                   onDropOnBreadcrumb?.(item.id, e);
                 }}
