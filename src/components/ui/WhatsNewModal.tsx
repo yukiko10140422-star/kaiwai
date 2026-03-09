@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.9.0";
+const CURRENT_VERSION = "1.10.0";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,16 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.10.0",
+    date: "2026-03-10",
+    title: "ファイルライブラリ",
+    items: [
+      { type: "new", text: "ファイルライブラリ機能を追加しました。フォルダ管理、ファイルアップロード、PDFプレビューが使えます" },
+      { type: "new", text: "ファイルにコメントを追加して、チームでフィードバックできるようになりました" },
+      { type: "new", text: "ファイルのバージョン管理に対応しました。新しいバージョンをアップロードして履歴を確認できます" },
+    ],
+  },
   {
     version: "1.9.0",
     date: "2026-03-08",

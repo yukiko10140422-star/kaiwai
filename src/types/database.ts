@@ -297,6 +297,46 @@ export interface FeatureRequestVote {
 }
 
 // ------------------------------------------------------------
+// Library (ファイルライブラリ)
+// ------------------------------------------------------------
+
+export type LibraryFileType = "image" | "video" | "audio" | "pdf" | "document" | "spreadsheet" | "presentation" | "archive" | "other";
+
+export interface LibraryFolder {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  project_id: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LibraryFile {
+  id: string;
+  folder_id: string | null;
+  project_id: string | null;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  storage_path: string;
+  description: string | null;
+  uploaded_by: string;
+  parent_file_id: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LibraryFileComment {
+  id: string;
+  file_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+}
+
+// ------------------------------------------------------------
 // Supabase Database 型 (supabase gen types 互換構造)
 // ------------------------------------------------------------
 
@@ -426,6 +466,21 @@ export interface Database {
       feature_request_votes: {
         Row: FeatureRequestVote;
         Insert: Omit<FeatureRequestVote, 'id' | 'created_at'>;
+        Update: never;
+      };
+      library_folders: {
+        Row: LibraryFolder;
+        Insert: Omit<LibraryFolder, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<LibraryFolder, 'id' | 'created_at'>>;
+      };
+      library_files: {
+        Row: LibraryFile;
+        Insert: Omit<LibraryFile, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<LibraryFile, 'id' | 'created_at'>>;
+      };
+      library_file_comments: {
+        Row: LibraryFileComment;
+        Insert: Omit<LibraryFileComment, 'id' | 'created_at'>;
         Update: never;
       };
     };
