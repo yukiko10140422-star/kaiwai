@@ -66,6 +66,8 @@ Every session must follow this flow:
 
 WhatsNewModal は `localStorage` ベースで、バージョンが変わったときのみユーザーに表示される。
 
+4. **GitHub Release 作成**: `gh release create vX.X.X --title "タイトル" --notes "変更内容"` でリリースを作成する
+
 ## Development Phases
 
 1. Foundation (Auth, profiles, project setup)
