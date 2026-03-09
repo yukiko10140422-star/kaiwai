@@ -10,9 +10,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 interface PdfPreviewProps {
   url: string;
   fileName: string;
+  scale?: number;
 }
 
-export default function PdfPreview({ url, fileName }: PdfPreviewProps) {
+export default function PdfPreview({ url, fileName, scale = 1 }: PdfPreviewProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loadError, setLoadError] = useState(false);
@@ -77,7 +78,7 @@ export default function PdfPreview({ url, fileName }: PdfPreviewProps) {
         >
           <Page
             pageNumber={currentPage}
-            width={600}
+            width={600 * scale}
             renderTextLayer={true}
             renderAnnotationLayer={true}
           />

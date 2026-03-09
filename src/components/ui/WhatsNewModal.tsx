@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.11.2";
+const CURRENT_VERSION = "1.11.3";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,17 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.11.3",
+    date: "2026-03-10",
+    title: "ライブラリ: プレビューモーダル改善",
+    items: [
+      { type: "new", text: "画像・PDFプレビューでズーム（拡大/縮小）ができるようになりました" },
+      { type: "improve", text: "画像・PDFの初期表示サイズを適正化し、文字が読みやすくなりました" },
+      { type: "fix", text: "モバイルでプレビューのボタンがボトムナビと重なる問題を修正" },
+      { type: "improve", text: "閉じるボタンをモバイルでタップしやすく改善" },
+    ],
+  },
   {
     version: "1.11.2",
     date: "2026-03-10",

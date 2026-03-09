@@ -18,10 +18,12 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentFile, setCurrentFile] = useState<LibraryFileWithProfile | null>(file);
+  const [scale, setScale] = useState(1);
 
   // Sync currentFile with prop
   useEffect(() => {
     setCurrentFile(file);
+    setScale(1);
   }, [file]);
 
   // Load signed URL
@@ -43,12 +45,26 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
   const hasNext = currentIndex >= 0 && currentIndex < files.length - 1;
 
   const goToPrev = useCallback(() => {
-    if (hasPrev) setCurrentFile(files[currentIndex - 1]);
+    if (hasPrev) {
+      setCurrentFile(files[currentIndex - 1]);
+      setScale(1);
+    }
   }, [hasPrev, files, currentIndex]);
 
   const goToNext = useCallback(() => {
-    if (hasNext) setCurrentFile(files[currentIndex + 1]);
+    if (hasNext) {
+      setCurrentFile(files[currentIndex + 1]);
+      setScale(1);
+    }
   }, [hasNext, files, currentIndex]);
+
+  // Ctrl+Wheel zoom
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      setScale((s) => Math.min(3, Math.max(0.25, s + (e.deltaY > 0 ? -0.1 : 0.1))));
+    }
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
@@ -81,9 +97,9 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
         </h2>
         <button
           onClick={onClose}
-          className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          className="p-2.5 md:p-2 rounded-lg text-white bg-white/10 md:bg-transparent md:text-white/70 hover:text-white hover:bg-white/20 transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -93,6 +109,7 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
       <div
         className="flex-1 flex items-center justify-center relative min-h-0 px-12"
         onClick={(e) => e.stopPropagation()}
+        onWheel={handleWheel}
       >
         {/* Left arrow */}
         {hasPrev && (
@@ -110,14 +127,17 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
         {loading ? (
           <div className="text-white/50 text-sm animate-pulse">読み込み中...</div>
         ) : isImage && signedUrl ? (
-          <img
-            src={signedUrl}
-            alt={currentFile.file_name}
-            className="max-h-[80vh] max-w-full object-contain rounded-lg"
-          />
+          <div className="overflow-auto max-h-[70vh] max-w-full flex items-center justify-center rounded-lg">
+            <img
+              src={signedUrl}
+              alt={currentFile.file_name}
+              className="object-contain rounded-lg transition-transform"
+              style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}
+            />
+          </div>
         ) : isPdf && signedUrl ? (
           <Suspense fallback={<div className="text-white/50 text-sm animate-pulse">PDF読み込み中...</div>}>
-            <PdfPreview url={signedUrl} fileName={currentFile.file_name} />
+            <PdfPreview url={signedUrl} fileName={currentFile.file_name} scale={scale} />
           </Suspense>
         ) : isVideo && signedUrl ? (
           <video
@@ -162,14 +182,41 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
 
       {/* Footer */}
       <div
-        className="flex items-center justify-between px-4 py-3 shrink-0"
+        className="flex items-center justify-between px-4 py-3 pb-20 md:pb-3 shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-white/50 text-xs">
-          {formatFileSize(currentFile.file_size)} · {new Date(currentFile.created_at).toLocaleDateString("ja-JP")}
-          {currentFile.uploader && ` · ${currentFile.uploader.display_name}`}
-          {files.length > 1 && ` · ${currentIndex + 1} / ${files.length}`}
-        </p>
+        {/* Zoom controls (image/PDF only) */}
+        {(isImage || isPdf) && signedUrl ? (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setScale((s) => Math.max(0.25, +(s - 0.25).toFixed(2)))}
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors text-sm font-bold"
+            >
+              −
+            </button>
+            <span className="text-white/70 text-xs w-12 text-center">{Math.round(scale * 100)}%</span>
+            <button
+              onClick={() => setScale((s) => Math.min(3, +(s + 0.25).toFixed(2)))}
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors text-sm font-bold"
+            >
+              +
+            </button>
+            {scale !== 1 && (
+              <button
+                onClick={() => setScale(1)}
+                className="px-2 py-1 text-xs rounded-lg bg-white/10 text-white/70 hover:bg-white/20 transition-colors ml-1"
+              >
+                リセット
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-white/50 text-xs">
+            {formatFileSize(currentFile.file_size)} · {new Date(currentFile.created_at).toLocaleDateString("ja-JP")}
+            {currentFile.uploader && ` · ${currentFile.uploader.display_name}`}
+            {files.length > 1 && ` · ${currentIndex + 1} / ${files.length}`}
+          </p>
+        )}
         <div className="flex items-center gap-2">
           {signedUrl && (
             <a

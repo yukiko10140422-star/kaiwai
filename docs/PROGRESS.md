@@ -523,3 +523,24 @@ Phase 5: ポリッシュ（継続中）
 - `src/components/library/LibraryFileRow.tsx` - text/plain fallback
 - `src/components/library/LibraryBreadcrumbs.tsx` - stopPropagation
 - `src/components/ui/WhatsNewModal.tsx` - v1.11.2 changelog
+
+### セッション: 2026-03-10 (v1.11.3) — ファイルプレビューモーダル改善
+
+**問題:**
+- 画像/PDFの拡大表示が大きすぎて文字が読めない
+- 拡大縮小（ズーム）機能がない
+- モバイルでフッターボタンがボトムナビと重なりタップできない
+
+**修正:**
+- 画像・PDFプレビューにズームコントロール（+/-/リセット）を追加
+- Ctrl+ホイールでのズームにも対応
+- フッターに `pb-20 md:pb-0` でモバイルナビとの余白確保
+- 閉じるボタンをモバイルで大きく目立つように改善
+- PDFの `Page` width を `600 * scale` で動的変更
+- 画像を `overflow-auto` コンテナ + `transform: scale()` でズーム
+- ファイル切替時にズームを1にリセット
+
+**変更ファイル:**
+- `src/components/library/FilePreviewModal.tsx` - ズームUI、フッター余白、閉じるボタン改善
+- `src/components/library/PdfPreview.tsx` - scale prop 対応
+- `src/components/ui/WhatsNewModal.tsx` - v1.11.3 changelog
