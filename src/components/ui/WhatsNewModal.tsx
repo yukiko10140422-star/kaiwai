@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.10.0";
+const CURRENT_VERSION = "1.10.1";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,14 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.10.1",
+    date: "2026-03-10",
+    title: "モバイルナビ改善",
+    items: [
+      { type: "improve", text: "モバイルのボトムナビにライブラリを追加しました。スマホからファイルに素早くアクセスできます" },
+    ],
+  },
   {
     version: "1.10.0",
     date: "2026-03-10",
