@@ -168,7 +168,8 @@ export default function LibraryPage() {
         setFiles(refreshed);
       } catch (err) {
         console.error("Upload failed:", err);
-        showToast("アップロードに失敗しました", "error");
+        const msg = err instanceof Error ? err.message : "アップロードに失敗しました";
+        showToast(msg, "error");
       } finally {
         setUploading(false);
         setUploadProgress(0);

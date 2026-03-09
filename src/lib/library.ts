@@ -169,6 +169,11 @@ export async function uploadLibraryFile(
   projectId: string | null,
   description?: string,
 ) {
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`ファイルサイズが上限(50MB)を超えています: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+  }
+
   const supabase = createClient();
 
   // Sanitize file name
@@ -177,7 +182,9 @@ export async function uploadLibraryFile(
 
   const { error: uploadError } = await supabase.storage
     .from("attachments")
-    .upload(storagePath, file);
+    .upload(storagePath, file, {
+      contentType: file.type || "application/octet-stream",
+    });
   if (uploadError) throw uploadError;
 
   const { data, error } = await supabase
@@ -273,12 +280,19 @@ export async function uploadNewVersion(originalFileId: string, file: File, userI
 
   const nextVersion = (versions?.[0]?.version ?? 1) + 1;
 
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`ファイルサイズが上限(50MB)を超えています: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+  }
+
   const safeName = file.name.replace(/[^\w.\-()（）\u3000-\u9FFF\uF900-\uFAFF]/g, "_");
   const storagePath = `library/${userId}/${Date.now()}_v${nextVersion}_${safeName}`;
 
   const { error: uploadError } = await supabase.storage
     .from("attachments")
-    .upload(storagePath, file);
+    .upload(storagePath, file, {
+      contentType: file.type || "application/octet-stream",
+    });
   if (uploadError) throw uploadError;
 
   const { data, error } = await supabase
