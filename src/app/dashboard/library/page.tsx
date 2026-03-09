@@ -253,6 +253,16 @@ export default function LibraryPage() {
       // Guard: don't drop folder onto itself
       if (payload.type === "folder" && payload.id === targetFolderId) return;
 
+      // Guard: don't move to same location (current folder)
+      if (targetFolderId === currentFolderId) return;
+
+      // Optimistic update: immediately remove from UI
+      if (payload.type === "file") {
+        setFiles((prev) => prev.filter((f) => f.id !== payload.id));
+      } else if (payload.type === "folder") {
+        setFolders((prev) => prev.filter((f) => f.id !== payload.id));
+      }
+
       try {
         if (payload.type === "file") {
           await moveLibraryFile(payload.id, targetFolderId);
@@ -265,9 +275,11 @@ export default function LibraryPage() {
       } catch (err) {
         console.error("Move failed:", err);
         showToast("移動に失敗しました", "error");
+        // Revert on error
+        await refreshData();
       }
     },
-    [refreshData],
+    [refreshData, currentFolderId],
   );
 
   const handleDragOverFolder = useCallback((e: React.DragEvent, folderId: string) => {

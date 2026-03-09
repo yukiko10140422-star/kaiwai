@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui";
  * 新しいバージョンを先頭に追加する。
  * version を上げると、未読のユーザーにモーダルが表示される。
  */
-const CURRENT_VERSION = "1.11.0";
+const CURRENT_VERSION = "1.11.1";
 
 interface ChangelogEntry {
   version: string;
@@ -18,6 +18,16 @@ interface ChangelogEntry {
 }
 
 const changelog: ChangelogEntry[] = [
+  {
+    version: "1.11.1",
+    date: "2026-03-10",
+    title: "ライブラリ: PDF表示改善 + D&D操作性向上",
+    items: [
+      { type: "fix", text: "PDFプレビューでUIが固まる問題を修正（iframe → react-pdf によるページレンダリングに変更）" },
+      { type: "improve", text: "ドラッグ&ドロップで移動したファイル/フォルダが即座に元の場所から消えるように改善" },
+      { type: "improve", text: "ドラッグ中のビジュアルフィードバックを強化（ドラッグ元の半透明化・ドロップ先のハイライト）" },
+    ],
+  },
   {
     version: "1.11.0",
     date: "2026-03-10",

@@ -41,15 +41,19 @@ export default function FolderCard({ folder, onClick, onRename, onDelete, onMove
     setRenaming(false);
   };
 
+  const [isDragging, setIsDragging] = useState(false);
+
   return (
     <div
-      className={`glass rounded-xl p-4 cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group relative ${isDragOver ? "ring-2 ring-accent bg-accent/10" : ""}`}
+      className={`glass rounded-xl p-4 cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group relative ${isDragOver ? "ring-2 ring-accent bg-accent/10 scale-105" : ""} ${isDragging ? "opacity-40 scale-95" : ""}`}
       onClick={renaming ? undefined : onClick}
       draggable={!renaming}
       onDragStart={(e) => {
         e.dataTransfer.setData("application/json", JSON.stringify({ type: "folder", id: folder.id }));
         e.dataTransfer.effectAllowed = "move";
+        setIsDragging(true);
       }}
+      onDragEnd={() => setIsDragging(false)}
       onDrop={onDropOnFolder}
       onDragOver={onDragOverFolder}
       onDragLeave={onDragLeaveFolder}

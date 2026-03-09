@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import FileIcon from "@/components/shared/FileIcon";
 import { formatFileSize } from "@/lib/files";
 import { getLibraryFileSignedUrl, type LibraryFileWithProfile } from "@/lib/library";
+
+const PdfPreview = lazy(() => import("./PdfPreview"));
 
 interface FilePreviewModalProps {
   file: LibraryFileWithProfile | null;
@@ -114,11 +116,9 @@ export default function FilePreviewModal({ file, files, onClose, onOpenDetail }:
             className="max-h-[80vh] max-w-full object-contain rounded-lg"
           />
         ) : isPdf && signedUrl ? (
-          <iframe
-            src={signedUrl}
-            title={currentFile.file_name}
-            className="w-full max-w-4xl h-[80vh] rounded-lg border-0 bg-white"
-          />
+          <Suspense fallback={<div className="text-white/50 text-sm animate-pulse">PDF読み込み中...</div>}>
+            <PdfPreview url={signedUrl} fileName={currentFile.file_name} />
+          </Suspense>
         ) : isVideo && signedUrl ? (
           <video
             key={currentFile.id}

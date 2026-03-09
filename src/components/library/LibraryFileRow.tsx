@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import FileIcon from "@/components/shared/FileIcon";
 import { formatFileSize } from "@/lib/files";
 import type { LibraryFileWithProfile } from "@/lib/library";
@@ -10,18 +11,20 @@ interface LibraryFileRowProps {
 }
 
 export default function LibraryFileRow({ file, onClick }: LibraryFileRowProps) {
+  const [isDragging, setIsDragging] = useState(false);
+
   return (
     <div
-      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card/50 cursor-pointer transition-colors group"
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card/50 cursor-pointer transition-colors group ${isDragging ? "opacity-40 bg-accent/5" : ""}`}
       onClick={onClick}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData("application/json", JSON.stringify({ type: "file", id: file.id }));
         e.dataTransfer.effectAllowed = "move";
-        (e.currentTarget as HTMLElement).style.opacity = "0.5";
+        setIsDragging(true);
       }}
-      onDragEnd={(e) => {
-        (e.currentTarget as HTMLElement).style.opacity = "1";
+      onDragEnd={() => {
+        setIsDragging(false);
       }}
     >
       <FileIcon fileType={file.file_type} className="w-5 h-5" />

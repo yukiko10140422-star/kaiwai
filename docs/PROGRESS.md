@@ -481,3 +481,23 @@ Phase 5: ポリッシュ（継続中）
 **次回やること:**
 - ユーザーテスト・フィードバック反映
 - パフォーマンス最適化
+
+---
+
+### セッション: 2026-03-10 (v1.11.1)
+
+**修正内容:**
+- PDFプレビューのUI硬直問題を修正: `<iframe>` → `react-pdf` によるページレンダリングに変更
+- D&D移動時に元の場所から即座にアイテムが消えるように楽観的UI更新を追加
+- 同じフォルダへのドロップを無視するガードを追加
+- ドラッグ中のビジュアルフィードバック改善（ドラッグ元の半透明化+縮小、ドロップ先のハイライト+拡大）
+
+**変更ファイル:**
+- `src/components/library/PdfPreview.tsx` - 新規（react-pdf ベースのPDFページレンダラー）
+- `src/components/library/FilePreviewModal.tsx` - PDF分岐をPdfPreviewコンポーネントに差し替え
+- `src/app/dashboard/library/page.tsx` - D&D楽観的UI更新 + 同フォルダドロップガード
+- `src/components/library/LibraryFileCard.tsx` - ドラッグ中ビジュアルフィードバック改善
+- `src/components/library/LibraryFileRow.tsx` - ドラッグ中ビジュアルフィードバック改善
+- `src/components/library/FolderCard.tsx` - ドラッグ中/ドロップ先ビジュアルフィードバック改善
+- `src/components/ui/WhatsNewModal.tsx` - v1.11.1 changelog
+- `next.config.ts` - react-pdf 用 canvas alias 追加

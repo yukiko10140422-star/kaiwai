@@ -14,6 +14,7 @@ export default function LibraryFileCard({ file, onClick }: LibraryFileCardProps)
   const isImage = file.file_type.startsWith("image/");
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (isImage) {
@@ -25,16 +26,16 @@ export default function LibraryFileCard({ file, onClick }: LibraryFileCardProps)
 
   return (
     <div
-      className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group"
+      className={`glass rounded-xl overflow-hidden cursor-pointer hover:ring-1 hover:ring-accent/30 transition-all group ${isDragging ? "opacity-40 scale-95 ring-1 ring-accent/50" : ""}`}
       onClick={onClick}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData("application/json", JSON.stringify({ type: "file", id: file.id }));
         e.dataTransfer.effectAllowed = "move";
-        (e.currentTarget as HTMLElement).style.opacity = "0.5";
+        setIsDragging(true);
       }}
-      onDragEnd={(e) => {
-        (e.currentTarget as HTMLElement).style.opacity = "1";
+      onDragEnd={() => {
+        setIsDragging(false);
       }}
     >
       {/* Thumbnail area */}
